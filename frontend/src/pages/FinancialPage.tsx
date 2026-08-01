@@ -3,6 +3,7 @@ import { api, errorMessage } from '../lib/api'
 import { currency, dateBR } from '../lib/format'
 import { Field, Input, Select, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
+import StatCard from '../components/StatCard'
 import type { Client, FinancialTransaction } from '../types'
 
 interface TxForm {
@@ -125,18 +126,46 @@ export default function FinancialPage() {
 
       {summary && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-xl bg-emerald-50 p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">Entradas</p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">{currency(summary.income)}</p>
-          </div>
-          <div className="rounded-xl bg-rose-50 p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-rose-700">Saídas</p>
-            <p className="mt-1 text-2xl font-bold text-rose-700">{currency(summary.expense)}</p>
-          </div>
-          <div className="rounded-xl bg-slate-800 p-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Saldo do período</p>
-            <p className="mt-1 text-2xl font-bold text-white">{currency(summary.balance)}</p>
-          </div>
+          <StatCard
+            label="Entradas"
+            value={currency(summary.income)}
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            }
+            gradient="green"
+          />
+          <StatCard
+            label="Saídas"
+            value={currency(summary.expense)}
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
+                />
+              </svg>
+            }
+            gradient="rose"
+          />
+          <StatCard
+            label="Saldo do período"
+            value={currency(summary.balance)}
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l9 5 9-5-9-5-9 5zm0 6l9 5 9-5M3 18l9 5 9-5" />
+              </svg>
+            }
+            gradient="slate"
+          />
         </div>
       )}
 
