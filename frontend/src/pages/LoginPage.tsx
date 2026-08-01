@@ -53,7 +53,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <div>
-            <p className="text-lg font-bold text-white">Sistema Celular</p>
+            <p className="text-lg font-bold text-white">OmniOS</p>
             <p className="text-xs text-indigo-300">Gestão para assistências técnicas</p>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function LoginPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-white">Sistema Celular</h1>
+            <h1 className="text-2xl font-bold text-white">OmniOS</h1>
             <p className="mt-1 text-sm text-slate-400">Assistência Técnica - Acesso da equipe</p>
           </div>
 

@@ -60,7 +60,7 @@ export default function RegisterPage() {
             </svg>
           </div>
           <div>
-            <p className="text-lg font-bold text-white">Sistema Celular</p>
+            <p className="text-lg font-bold text-white">OmniOS</p>
             <p className="text-xs text-emerald-300">Gestão para assistências técnicas</p>
           </div>
         </div>

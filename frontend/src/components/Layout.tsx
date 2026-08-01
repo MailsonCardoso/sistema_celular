@@ -142,7 +142,7 @@ export default function Layout() {
           </div>
           <div>
             <p className="text-sm font-semibold text-white">
-              {isSuperAdmin ? 'Sistema Celular' : (store?.store_name ?? 'Sistema Celular')}
+              {isSuperAdmin ? 'OmniOS' : (store?.store_name ?? 'OmniOS')}
             </p>
             <p className="text-xs text-slate-400">{isSuperAdmin ? 'Administração' : 'Assistência Técnica'}</p>
           </div>
