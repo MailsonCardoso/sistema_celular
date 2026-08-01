@@ -29,6 +29,9 @@ api.interceptors.response.use(
 
 export function errorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
+    if (error.response?.status === 429) {
+      return 'Muitas tentativas de login. Aguarde 1 minuto e tente novamente.'
+    }
     const data = error.response?.data as { message?: string; errors?: Record<string, string[]> } | undefined
     if (data?.errors) {
       return Object.values(data.errors).flat()[0] ?? data.message ?? 'Erro inesperado.'
