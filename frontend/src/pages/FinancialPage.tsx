@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, errorMessage } from '../lib/api'
 import { currency, dateBR } from '../lib/format'
 import { Field, Input, Select, useFormErrors } from '../components/form'
@@ -31,6 +31,7 @@ const emptyForm: TxForm = {
 export default function FinancialPage() {
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([])
   const [clients, setClients] = useState<Client[]>([])
+  const [search, setSearch] = useState('')
   const [type, setType] = useState('')
   const [status, setStatus] = useState('')
   const [dateFrom, setDateFrom] = useState('')
@@ -63,6 +64,25 @@ export default function FinancialPage() {
   useEffect(() => {
     void load()
   }, [load])
+
+  const pendingTotal = useMemo(
+    () =>
+      transactions
+        .filter((tx) => tx.type === 'income' && tx.status === 'pending')
+        .reduce((acc, tx) => acc + tx.amount, 0),
+    [transactions],
+  )
+
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    if (!term) return transactions
+    return transactions.filter(
+      (tx) =>
+        tx.description.toLowerCase().includes(term) ||
+        (tx.client?.name ?? '').toLowerCase().includes(term) ||
+        (tx.category_label ?? '').toLowerCase().includes(term),
+    )
+  }, [transactions, search])
 
   const openCreate = () => {
     setForm({ ...emptyForm, due_date: new Date().toISOString().slice(0, 10) })
@@ -125,7 +145,7 @@ export default function FinancialPage() {
       </div>
 
       {summary && (
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
             label="Entradas"
             value={currency(summary.income)}
@@ -166,16 +186,40 @@ export default function FinancialPage() {
             }
             gradient="slate"
           />
+          <StatCard
+            label="A receber"
+            value={currency(pendingTotal)}
+            hint={pendingTotal > 0 ? 'Lançamentos pendentes' : 'Nenhum pendente'}
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            gradient="amber"
+          />
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-end gap-3">
+      <div className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200/60 bg-white p-3 shadow-sm">
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar lançamento, cliente..."
+            className="w-full max-w-xs rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none"
+          />
+        </div>
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-600">Tipo</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           >
             <option value="">Todos</option>
             <option value="income">Entradas</option>
@@ -187,7 +231,7 @@ export default function FinancialPage() {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           >
             <option value="">Todos</option>
             <option value="pending">Pendente</option>
@@ -201,7 +245,7 @@ export default function FinancialPage() {
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           />
         </div>
         <div>
@@ -210,16 +254,16 @@ export default function FinancialPage() {
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-xs uppercase text-slate-400">
-              <th className="px-5 py-3">Descrição</th>
+            <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
+              <th className="px-5 py-3">Lançamento</th>
               <th className="px-5 py-3">Cliente</th>
               <th className="px-5 py-3">Categoria</th>
               <th className="px-5 py-3 text-center">Pagamento</th>
@@ -230,61 +274,124 @@ export default function FinancialPage() {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((tx) => (
-              <tr key={tx.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                <td className="px-5 py-3">
-                  <p className="font-medium text-slate-800">{tx.description}</p>
-                  {tx.service_order_id && (
-                    <p className="text-xs text-slate-400">OS #{tx.service_order_id}</p>
+            {visible.map((tx) => (
+              <tr key={tx.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70">
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                        tx.type === 'income'
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'bg-rose-50 text-rose-600'
+                      }`}
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {tx.type === 'income' ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                        )}
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-slate-800">{tx.description}</p>
+                      {tx.service_order_id && (
+                        <p className="text-xs text-slate-400">OS #{tx.service_order_id}</p>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-5 py-3.5">
+                  {tx.client ? (
+                    <span className="flex items-center gap-2 text-slate-600">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-[10px] font-bold text-violet-700">
+                        {tx.client.name.slice(0, 1).toUpperCase()}
+                      </span>
+                      {tx.client.name}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">—</span>
                   )}
                 </td>
-                <td className="px-5 py-3 text-slate-600">{tx.client?.name ?? '—'}</td>
-                <td className="px-5 py-3 text-slate-600">{tx.category_label}</td>
-                <td className="px-5 py-3 text-center text-slate-600">{tx.payment_method_label ?? '—'}</td>
-                <td className="px-5 py-3 text-slate-600">{dateBR(tx.due_date)}</td>
+                <td className="px-5 py-3.5">
+                  <span
+                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      tx.category === 'expense'
+                        ? 'bg-rose-50 text-rose-700'
+                        : tx.category === 'service_payment'
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : tx.category === 'parts_payment'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {tx.category_label}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5 text-center">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                    {tx.payment_method_label ?? '—'}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5 text-slate-600">{dateBR(tx.due_date)}</td>
                 <td
-                  className={`px-5 py-3 text-right font-bold ${
+                  className={`px-5 py-3.5 text-right font-bold ${
                     tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'
                   }`}
                 >
                   {tx.type === 'income' ? '+' : '−'} {currency(tx.amount)}
                 </td>
-                <td className="px-5 py-3">
+                <td className="px-5 py-3.5">
                   <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       tx.status === 'paid'
-                        ? 'bg-emerald-100 text-emerald-700'
+                        ? 'bg-emerald-50 text-emerald-700'
                         : tx.status === 'pending'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-slate-200 text-slate-500'
+                          ? 'bg-amber-50 text-amber-700'
+                          : 'bg-slate-100 text-slate-500'
                     }`}
                   >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        tx.status === 'paid'
+                          ? 'bg-emerald-500'
+                          : tx.status === 'pending'
+                            ? 'bg-amber-500'
+                            : 'bg-slate-400'
+                      }`}
+                    />
                     {tx.status_label}
                   </span>
                 </td>
-                <td className="px-5 py-3">
-                  <div className="flex justify-end gap-2">
+                <td className="px-5 py-3.5">
+                  <div className="flex justify-end gap-1.5">
                     {tx.type === 'income' && tx.status === 'pending' && (
                       <button
                         onClick={() => void markPaid(tx)}
-                        className="rounded-md border border-emerald-300 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                        title="Marcar como recebido"
+                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
                       >
-                        Receber
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                       </button>
                     )}
                     <button
                       onClick={() => void remove(tx)}
-                      className="rounded-md border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
+                      title="Excluir"
+                      className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
                     >
-                      Excluir
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {transactions.length === 0 && (
+            {visible.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-5 py-8 text-center text-slate-400">
+                <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
                   Nenhuma transação encontrada.
                 </td>
               </tr>
