@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { api, errorMessage } from '../lib/api'
+import { useAuth } from '../context/AuthContext'
 import type { Role, User } from '../types'
 
 const roleOptions: { value: Role; label: string }[] = [
@@ -8,11 +9,26 @@ const roleOptions: { value: Role; label: string }[] = [
   { value: 'atendente', label: 'Atendente' },
 ]
 
+const icons = {
+  edit: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+      />
+    </svg>
+  ),
+}
+
 export default function UsersPage() {
+  const { user: me } = useAuth()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [editing, setEditing] = useState<User | null>(null)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -36,18 +52,45 @@ export default function UsersPage() {
     void load()
   }, [load])
 
-  const handleCreate = async (e: FormEvent) => {
+  const openCreate = () => {
+    setEditing(null)
+    setName('')
+    setEmail('')
+    setPhone('')
+    setPassword('')
+    setRole('tecnico')
+    setError('')
+    setModalOpen(true)
+  }
+
+  const openEdit = (user: User) => {
+    setEditing(user)
+    setName(user.name)
+    setEmail(user.email)
+    setPhone(user.phone ?? '')
+    setPassword('')
+    setRole(user.role)
+    setError('')
+    setModalOpen(true)
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError('')
     try {
-      await api.post('/users', { name, email, phone: phone || null, password, role })
+      if (editing) {
+        await api.patch(`/users/${editing.id}`, {
+          name,
+          email,
+          phone: phone || null,
+          role,
+          ...(password ? { password } : {}),
+        })
+      } else {
+        await api.post('/users', { name, email, phone: phone || null, password, role })
+      }
       setModalOpen(false)
-      setName('')
-      setEmail('')
-      setPhone('')
-      setPassword('')
-      setRole('tecnico')
       await load()
     } catch (err) {
       setError(errorMessage(err))
@@ -78,7 +121,7 @@ export default function UsersPage() {
           <p className="text-sm text-slate-500">Gerencie os usuários com acesso ao sistema da sua loja.</p>
         </div>
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={openCreate}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
         >
           + Novo usuário
@@ -138,16 +181,27 @@ export default function UsersPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right">
-                    <button
-                      onClick={() => void toggleActive(user)}
-                      className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                        user.is_active
-                          ? 'bg-rose-600 text-white hover:bg-rose-700'
-                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                      }`}
-                    >
-                      {user.is_active ? 'Desativar' : 'Reativar'}
-                    </button>
+                    <div className="flex justify-end gap-1.5">
+                      {user.id !== me?.id && (
+                        <button
+                          onClick={() => openEdit(user)}
+                          title="Editar"
+                          className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                        >
+                          {icons.edit}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => void toggleActive(user)}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                          user.is_active
+                            ? 'bg-rose-600 text-white hover:bg-rose-700'
+                            : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        }`}
+                      >
+                        {user.is_active ? 'Desativar' : 'Reativar'}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -162,11 +216,18 @@ export default function UsersPage() {
           onClick={() => setModalOpen(false)}
         >
           <form
-            onSubmit={handleCreate}
+            onSubmit={handleSubmit}
             className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">Novo usuário</h2>
+            <h2 className="mb-4 text-lg font-semibold text-slate-900">
+              {editing ? 'Editar usuário' : 'Novo usuário'}
+            </h2>
+            {error && (
+              <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {error}
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">Nome</label>
@@ -212,13 +273,16 @@ export default function UsersPage() {
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Senha inicial</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {editing ? 'Nova senha (opcional)' : 'Senha inicial'}
+                </label>
                 <input
                   type="password"
-                  required
-                  minLength={6}
+                  required={!editing}
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder={editing ? 'Deixe em branco para manter a atual' : '••••••••'}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
@@ -235,7 +299,7 @@ export default function UsersPage() {
                   disabled={saving}
                   className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
                 >
-                  {saving ? 'Salvando...' : 'Criar usuário'}
+                  {saving ? 'Salvando...' : editing ? 'Salvar' : 'Criar usuário'}
                 </button>
               </div>
             </div>
