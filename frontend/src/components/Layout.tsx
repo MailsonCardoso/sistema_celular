@@ -127,8 +127,8 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      <aside className="flex w-64 shrink-0 flex-col border-r border-slate-800 bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-slate-100">
+      <aside className="flex w-64 shrink-0 flex-col bg-slate-950">
         <div className="flex items-center gap-3 border-b border-slate-800/70 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-6 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-900/40">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -216,7 +216,7 @@ export default function Layout() {
         )}
       </aside>
 
-      <main className="flex-1 overflow-x-auto">
+      <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-7xl px-8 py-8">
           <Outlet />
         </div>
