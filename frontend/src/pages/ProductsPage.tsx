@@ -3,6 +3,7 @@ import { api, errorMessage } from '../lib/api'
 import { currency } from '../lib/format'
 import { Field, Input, Select, Textarea, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 import LimitGate from '../components/LimitGate'
 import StatCard from '../components/StatCard'
 import type { Product } from '../types'
@@ -77,6 +78,8 @@ export default function ProductsPage() {
   const [form, setForm] = useState<ProductForm>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState<Product | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const { serverErrors, setServerErrors, handleSubmit } = useFormErrors()
 
   const load = useCallback(async () => {
@@ -159,13 +162,15 @@ export default function ProductsPage() {
   }
 
   const remove = async (product: Product) => {
-    if (!confirm(`Excluir "${product.name}"?`)) return
+    setDeleting(true)
     setError('')
     try {
       await api.delete(`/products/${product.id}`)
+      setConfirmDelete(null)
       await load()
     } catch (err) {
       alert(errorMessage(err))
+      setDeleting(false)
     }
   }
 
@@ -338,7 +343,7 @@ export default function ProductsPage() {
                         {icons.power}
                       </button>
                       <button
-                        onClick={() => void remove(product)}
+                        onClick={() => setConfirmDelete(product)}
                         title="Excluir"
                         className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
                       >
@@ -455,6 +460,22 @@ export default function ProductsPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmDelete !== null}
+        title="Excluir produto"
+        loading={deleting}
+        message={
+          <>
+            Tem certeza que deseja excluir{' '}
+            <strong className="text-slate-900">{confirmDelete?.name}</strong> do estoque?
+            <br />
+            <span className="font-medium text-rose-600">Esta ação não pode ser desfeita.</span>
+          </>
+        }
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => confirmDelete && void remove(confirmDelete)}
+      />
     </div>
   )
 }

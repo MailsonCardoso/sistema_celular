@@ -3,6 +3,7 @@ import { api, errorMessage } from '../lib/api'
 import { currency, dateBR } from '../lib/format'
 import { Field, Input, Select, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 import StatCard from '../components/StatCard'
 import type { Client, FinancialTransaction } from '../types'
 
@@ -41,6 +42,8 @@ export default function FinancialPage() {
   const [form, setForm] = useState<TxForm>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState<FinancialTransaction | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const { serverErrors, setServerErrors, handleSubmit } = useFormErrors()
 
   const load = useCallback(async () => {
@@ -127,9 +130,15 @@ export default function FinancialPage() {
   }
 
   const remove = async (tx: FinancialTransaction) => {
-    if (!confirm('Excluir esta transação?')) return
-    await api.delete(`/financial-transactions/${tx.id}`)
-    await load()
+    setDeleting(true)
+    try {
+      await api.delete(`/financial-transactions/${tx.id}`)
+      setConfirmDelete(null)
+      await load()
+    } catch (err) {
+      alert(errorMessage(err))
+      setDeleting(false)
+    }
   }
 
   return (
@@ -377,7 +386,7 @@ export default function FinancialPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => void remove(tx)}
+                      onClick={() => setConfirmDelete(tx)}
                       title="Excluir"
                       className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
                     >
@@ -523,6 +532,23 @@ export default function FinancialPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmDelete !== null}
+        title="Excluir lançamento"
+        loading={deleting}
+        message={
+          <>
+            Tem certeza que deseja excluir a transação{' '}
+            <strong className="text-slate-900">{confirmDelete?.description}</strong> de{' '}
+            {confirmDelete ? currency(confirmDelete.amount) : ''}?
+            <br />
+            <span className="font-medium text-rose-600">Esta ação não pode ser desfeita.</span>
+          </>
+        }
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => confirmDelete && void remove(confirmDelete)}
+      />
     </div>
   )
 }

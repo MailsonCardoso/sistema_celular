@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api, errorMessage } from '../lib/api'
+import ConfirmModal from '../components/ConfirmModal'
 import type { Store, SubscriptionStatus } from '../types'
 
 const statusStyles: Record<SubscriptionStatus, string> = {
@@ -14,6 +15,8 @@ export default function StoresPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [confirmStore, setConfirmStore] = useState<Store | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -46,17 +49,15 @@ export default function StoresPage() {
   }
 
   const remove = async (store: Store) => {
-    if (
-      !confirm(
-        `Excluir a loja "${store.store_name}" e TODOS os seus dados (clientes, OSs, estoque, financeiro e usuários)? Esta ação não pode ser desfeita.`,
-      )
-    )
-      return
+    setDeleting(true)
+    setError('')
     try {
       await api.delete(`/admin/stores/${store.id}`)
+      setConfirmStore(null)
       await load()
     } catch (err) {
       setError(errorMessage(err))
+      setDeleting(false)
     }
   }
 
@@ -92,6 +93,23 @@ export default function StoresPage() {
           {error}
         </div>
       )}
+
+      <ConfirmModal
+        open={confirmStore !== null}
+        title="Excluir loja"
+        loading={deleting}
+        message={
+          <>
+            Excluir a loja{' '}
+            <strong className="text-slate-900">{confirmStore?.store_name}</strong> e{' '}
+            <strong>TODOS</strong> os seus dados (clientes, OSs, estoque, financeiro e usuários)?
+            <br />
+            <span className="font-medium text-rose-600">Esta ação não pode ser desfeita.</span>
+          </>
+        }
+        onCancel={() => setConfirmStore(null)}
+        onConfirm={() => confirmStore && void remove(confirmStore)}
+      />
 
       {loading ? (
         <p className="py-10 text-center text-sm text-slate-500">Carregando lojas...</p>
@@ -175,7 +193,7 @@ export default function StoresPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => void remove(store)}
+                      onClick={() => setConfirmStore(store)}
                       title="Excluir loja e todos os dados"
                       className="ml-2 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
                     >

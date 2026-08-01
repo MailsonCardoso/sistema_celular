@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, errorMessage } from '../lib/api'
 import { Field, Input, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
+import ConfirmModal from '../components/ConfirmModal'
 import LimitGate from '../components/LimitGate'
 import StatCard from '../components/StatCard'
 import type { Client } from '../types'
@@ -83,6 +84,8 @@ export default function ClientsPage() {
   const [form, setForm] = useState<ClientForm>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState<Client | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const { serverErrors, setServerErrors, handleSubmit } = useFormErrors()
 
   const load = useCallback(async (term = '') => {
@@ -161,12 +164,14 @@ export default function ClientsPage() {
   }
 
   const remove = async (client: Client) => {
-    if (!confirm(`Excluir "${client.name}"?`)) return
+    setDeleting(true)
     try {
       await api.delete(`/clients/${client.id}`)
+      setConfirmDelete(null)
       await load(search)
     } catch (err) {
       alert(errorMessage(err))
+      setDeleting(false)
     }
   }
 
@@ -287,7 +292,7 @@ export default function ClientsPage() {
                       {icons.power}
                     </button>
                     <button
-                      onClick={() => void remove(client)}
+                      onClick={() => setConfirmDelete(client)}
                       title="Excluir"
                       className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
                     >
@@ -377,6 +382,22 @@ export default function ClientsPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={confirmDelete !== null}
+        title="Excluir cliente"
+        loading={deleting}
+        message={
+          <>
+            Tem certeza que deseja excluir{' '}
+            <strong className="text-slate-900">{confirmDelete?.name}</strong>?
+            <br />
+            <span className="font-medium text-rose-600">Esta ação não pode ser desfeita.</span>
+          </>
+        }
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => confirmDelete && void remove(confirmDelete)}
+      />
     </div>
   )
 }
