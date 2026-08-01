@@ -48,6 +48,21 @@ class Store extends Model
         return $this->hasMany(ServiceOrder::class);
     }
 
+    public function serviceOrderItems(): HasMany
+    {
+        return $this->hasMany(ServiceOrderItem::class);
+    }
+
+    public function serviceHistory(): HasMany
+    {
+        return $this->hasMany(ServiceHistory::class);
+    }
+
+    public function financialTransactions(): HasMany
+    {
+        return $this->hasMany(FinancialTransaction::class);
+    }
+
     public function isTrial(): bool
     {
         return $this->subscription_status->isTrial();

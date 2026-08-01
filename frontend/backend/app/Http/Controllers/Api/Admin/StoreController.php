@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateStoreStatusRequest;
 use App\Http\Resources\StoreResource;
 use App\Models\Store;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
@@ -64,5 +66,37 @@ class StoreController extends Controller
         return (new StoreResource($store->loadCount([
             'users', 'clients', 'products', 'serviceOrders',
         ])))->additional(['message' => "Loja atualizada para \"{$status}\"."]);
+    }
+
+    /**
+     * Exclui a loja e todos os dados vinculados (clientes, OSs, estoque,
+     * financeiro, histórico e usuários). Tudo em uma única transação.
+     */
+    public function destroy(Store $store): JsonResponse
+    {
+        $storeName = $store->store_name;
+
+        DB::transaction(function () use ($store) {
+            $userIds = $store->users()->pluck('id');
+            $orderIds = $store->serviceOrders()->pluck('id');
+
+            $store->financialTransactions()->delete();
+            $store->serviceOrderItems()->delete();
+            $store->serviceHistory()->delete();
+            $store->serviceOrders()->delete();
+            $store->clients()->delete();
+            $store->products()->delete();
+
+            DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+            DB::table('personal_access_tokens')
+                ->where('tokenable_type', User::class)
+                ->whereIn('tokenable_id', $userIds)
+                ->delete();
+
+            $store->users()->delete();
+            $store->delete();
+        });
+
+        return response()->json(['message' => "Loja \"{$storeName}\" e todos os seus dados foram excluídos."]);
     }
 }

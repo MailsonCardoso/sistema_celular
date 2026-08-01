@@ -122,5 +122,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/stores', [AdminStoreController::class, 'index'])->name('api.admin.stores.index');
         Route::patch('/stores/{store}/status', [AdminStoreController::class, 'updateStatus'])
             ->name('api.admin.stores.status');
+        Route::delete('/stores/{store}', [AdminStoreController::class, 'destroy'])
+            ->name('api.admin.stores.destroy');
     });
 });

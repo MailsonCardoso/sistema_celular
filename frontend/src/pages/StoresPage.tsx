@@ -45,6 +45,21 @@ export default function StoresPage() {
     }
   }
 
+  const remove = async (store: Store) => {
+    if (
+      !confirm(
+        `Excluir a loja "${store.store_name}" e TODOS os seus dados (clientes, OSs, estoque, financeiro e usuários)? Esta ação não pode ser desfeita.`,
+      )
+    )
+      return
+    try {
+      await api.delete(`/admin/stores/${store.id}`)
+      await load()
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -159,6 +174,13 @@ export default function StoresPage() {
                         Suspender
                       </button>
                     )}
+                    <button
+                      onClick={() => void remove(store)}
+                      title="Excluir loja e todos os dados"
+                      className="ml-2 rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
+                    >
+                      Excluir
+                    </button>
                   </td>
                 </tr>
               ))}
