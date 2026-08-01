@@ -8,35 +8,16 @@ import LimitGate from '../components/LimitGate'
 import { useAuth } from '../context/AuthContext'
 import type { ServiceOrder, ServiceOrderStatusValue } from '../types'
 
-interface KanbanColumn {
-  status: ServiceOrderStatusValue
-  label: string
-  orders: ServiceOrder[]
-}
-
-const columnOrder: ServiceOrderStatusValue[] = [
-  'opened',
-  'awaiting_parts',
-  'in_progress',
-  'awaiting_approval',
-  'completed',
+const statusFilters: { value: ServiceOrderStatusValue | 'all'; label: string; dot: string }[] = [
+  { value: 'all', label: 'Todas', dot: 'bg-slate-400' },
+  { value: 'opened', label: 'Abertas', dot: 'bg-sky-500' },
+  { value: 'awaiting_parts', label: 'Aguardando Peças', dot: 'bg-amber-500' },
+  { value: 'in_progress', label: 'Em Reparo', dot: 'bg-violet-500' },
+  { value: 'awaiting_approval', label: 'Aguardando Aprovação', dot: 'bg-orange-500' },
+  { value: 'completed', label: 'Concluídas', dot: 'bg-emerald-500' },
+  { value: 'delivered', label: 'Entregues', dot: 'bg-teal-500' },
+  { value: 'cancelled', label: 'Canceladas', dot: 'bg-rose-500' },
 ]
-
-const columnColors: Record<string, { dot: string; text: string }> = {
-  opened: { dot: 'bg-sky-500', text: 'text-sky-700' },
-  awaiting_parts: { dot: 'bg-amber-500', text: 'text-amber-700' },
-  in_progress: { dot: 'bg-violet-500', text: 'text-violet-700' },
-  awaiting_approval: { dot: 'bg-orange-500', text: 'text-orange-700' },
-  completed: { dot: 'bg-emerald-500', text: 'text-emerald-700' },
-}
-
-const accentByStatus: Record<string, string> = {
-  opened: 'border-l-sky-400',
-  awaiting_parts: 'border-l-amber-400',
-  in_progress: 'border-l-violet-400',
-  awaiting_approval: 'border-l-orange-400',
-  completed: 'border-l-emerald-400',
-}
 
 const icons = {
   device: (
@@ -79,6 +60,16 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
+  eye: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+      />
+    </svg>
+  ),
 }
 
 function daysOpen(entryDate: string): number {
@@ -88,45 +79,39 @@ function daysOpen(entryDate: string): number {
 
 export default function ServiceOrdersPage() {
   const { user } = useAuth()
-  const [columns, setColumns] = useState<KanbanColumn[]>([])
+  const [orders, setOrders] = useState<ServiceOrder[]>([])
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState<ServiceOrderStatusValue | 'all'>('all')
   const [createOpen, setCreateOpen] = useState(false)
   const [detailId, setDetailId] = useState<number | null>(null)
-  const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
-    const { data } = await api.get<{ columns: Record<string, KanbanColumn> }>('/service-orders/kanban')
-    setColumns(columnOrder.map((status) => data.columns[status]).filter(Boolean))
+    const { data } = await api.get<{ data: ServiceOrder[] }>('/service-orders', {
+      params: {
+        search: search.trim() || undefined,
+        status: status === 'all' ? undefined : status,
+        per_page: 100,
+      },
+    })
+    setOrders(data.data)
     setLoading(false)
-  }, [])
+  }, [search, status])
 
   useEffect(() => {
-    void load()
+    const t = setTimeout(() => void load(), 300)
+    return () => clearTimeout(t)
   }, [load])
 
   const canCreate = !!user && ['admin', 'atendente'].includes(user.role)
 
-  const filteredColumns = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return columns
-    return columns.map((column) => ({
-      ...column,
-      orders: column.orders.filter(
-        (o) =>
-          o.id.toString().includes(term) ||
-          `${o.device_brand} ${o.device_model}`.toLowerCase().includes(term) ||
-          (o.client?.name ?? '').toLowerCase().includes(term) ||
-          (o.technician?.name ?? '').toLowerCase().includes(term),
-      ),
-    }))
-  }, [columns, search])
-
-  const totalOpen = useMemo(
-    () =>
-      filteredColumns
-        .filter((c) => c.status !== 'completed')
-        .reduce((acc, c) => acc + c.orders.length, 0),
-    [filteredColumns],
+  const openCount = useMemo(
+    () => orders.filter((o) => !['completed', 'delivered', 'cancelled'].includes(o.status)).length,
+    [orders],
+  )
+  const totalValue = useMemo(
+    () => orders.filter((o) => o.status === 'completed').reduce((acc, o) => acc + o.total_amount, 0),
+    [orders],
   )
 
   return (
@@ -151,13 +136,38 @@ export default function ServiceOrdersPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por OS, cliente, aparelho ou técnico..."
+            placeholder="Buscar por aparelho, IMEI ou cliente..."
             className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none"
           />
         </div>
-        {search && (
-          <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
-            {totalOpen} em andamento
+        <div className="flex flex-wrap items-center gap-1.5">
+          {statusFilters.map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setStatus(filter.value)}
+              className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                status === filter.value
+                  ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+              }`}
+            >
+              <span className={`h-2 w-2 rounded-full ${filter.dot} ${status === filter.value ? 'opacity-90' : ''}`} />
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-3">
+        <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+          {orders.length} OSs na listagem
+        </span>
+        <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+          {openCount} em andamento
+        </span>
+        {totalValue > 0 && (
+          <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            Concluídas: {currency(totalValue)}
           </span>
         )}
       </div>
@@ -167,85 +177,94 @@ export default function ServiceOrdersPage() {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
         </div>
       ) : (
-        <div className="flex items-start gap-4 overflow-x-auto pb-4">
-          {filteredColumns.map((column) => {
-            const color = columnColors[column.status] ?? columnColors.opened
-            const total = column.orders.reduce((acc, o) => acc + o.total_amount, 0)
-            return (
-              <div key={column.status} className="w-72 shrink-0 rounded-2xl border border-slate-200/60 bg-slate-100/80 p-3">
-                <div className="mb-3 flex items-center justify-between px-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${color.dot}`} />
-                    <span className="text-sm font-semibold text-slate-700">{column.label}</span>
-                  </div>
-                  <span className="rounded-full bg-white px-2.5 py-0.5 text-xs font-bold text-slate-600 shadow-sm">
-                    {column.orders.length}
-                  </span>
-                </div>
-
-                <div className="space-y-3">
-                  {column.orders.map((order) => {
-                    const days = daysOpen(order.entry_date)
-                    return (
-                      <button
-                        key={order.id}
-                        onClick={() => setDetailId(order.id)}
-                        className={`w-full rounded-xl border border-slate-200/70 border-l-4 bg-white p-4 text-left shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md ${accentByStatus[order.status] ?? 'border-l-slate-300'}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-indigo-600">OS #{order.id}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-1 text-[11px] text-slate-400">
-                              {icons.clock}
-                              {dateBR(order.entry_date)}
-                            </span>
-                            {days > 1 && (
-                              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                                {days}d
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-slate-800">
-                          <span className="text-slate-400">{icons.device}</span>
-                          {order.device_brand} {order.device_model}
+        <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
+                <th className="px-5 py-3">OS #</th>
+                <th className="px-5 py-3">Aparelho</th>
+                <th className="px-5 py-3">Cliente</th>
+                <th className="px-5 py-3">Técnico</th>
+                <th className="px-5 py-3">Entrada</th>
+                <th className="px-5 py-3 text-right">Valor</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => {
+                const days = daysOpen(order.entry_date)
+                return (
+                  <tr
+                    key={order.id}
+                    onClick={() => setDetailId(order.id)}
+                    className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-indigo-50/40"
+                  >
+                    <td className="px-5 py-3.5 font-bold text-indigo-600">#{order.id}</td>
+                    <td className="px-5 py-3.5">
+                      <p className="flex items-center gap-1.5 font-medium text-slate-800">
+                        <span className="text-slate-400">{icons.device}</span>
+                        {order.device_brand} {order.device_model}
+                      </p>
+                      {order.device_imei && <p className="mt-0.5 text-xs text-slate-400">IMEI: {order.device_imei}</p>}
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-600">
+                      <p className="flex items-center gap-1.5">
+                        <span className="text-slate-400">{icons.user}</span>
+                        {order.client?.name ?? `Cliente #${order.client_id}`}
+                      </p>
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-600">
+                      {order.technician ? (
+                        <p className="flex items-center gap-1.5">
+                          <span className="text-slate-400">{icons.wrench}</span>
+                          {order.technician.name}
                         </p>
-                        <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-slate-500">
-                          <span className="text-slate-400">{icons.user}</span>
-                          {order.client?.name ?? `Cliente #${order.client_id}`}
-                        </p>
-                        {order.technician && (
-                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
-                            <span className="text-slate-400">{icons.wrench}</span>
-                            Técnico: {order.technician.name}
-                          </p>
-                        )}
-
-                        <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2.5">
-                          <span className="text-sm font-bold text-slate-700">{currency(order.total_amount)}</span>
-                          <StatusBadge status={order.status} label={order.status_label} />
-                        </div>
-                      </button>
-                    )
-                  })}
-                  {column.orders.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-slate-300 py-8 text-center">
-                      <p className="text-xs font-medium text-slate-400">Sem OSs nesta etapa</p>
-                      {search && <p className="mt-0.5 text-[11px] text-slate-400">nada corresponde à busca</p>}
-                    </div>
-                  )}
-                </div>
-
-                {total > 0 && (
-                  <div className="mt-3 flex justify-between rounded-lg bg-white/70 px-3 py-2 text-[11px] font-semibold text-slate-500">
-                    <span>Total</span>
-                    <span className={`${color.text}`}>{currency(total)}</span>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <p className="flex items-center gap-1.5 whitespace-nowrap text-slate-600">
+                        <span className="text-slate-400">{icons.clock}</span>
+                        {dateBR(order.entry_date)}
+                      </p>
+                      {days > 1 && (
+                        <span className="mt-0.5 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                          {days} dias
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 text-right font-bold text-slate-700">{currency(order.total_amount)}</td>
+                    <td className="px-5 py-3.5">
+                      <StatusBadge status={order.status} label={order.status_label} />
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDetailId(order.id)
+                          }}
+                          title="Ver detalhes"
+                          className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                        >
+                          {icons.eye}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+              {orders.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
+                    Nenhuma ordem de serviço encontrada.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
