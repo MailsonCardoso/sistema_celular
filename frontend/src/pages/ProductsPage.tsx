@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, errorMessage } from '../lib/api'
 import { currency } from '../lib/format'
 import { Field, Input, Select, Textarea, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
 import LimitGate from '../components/LimitGate'
+import StatCard from '../components/StatCard'
 import type { Product } from '../types'
 
 interface ProductForm {
@@ -26,6 +27,44 @@ const emptyForm: ProductForm = {
   selling_price: '',
   stock_quantity: '0',
   min_stock_quantity: '0',
+}
+
+const icons = {
+  box: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  ),
+  alert: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    </svg>
+  ),
+  value: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  ),
+  search: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  ),
+  edit: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  ),
+  power: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+    </svg>
+  ),
+  trash: (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  ),
 }
 
 export default function ProductsPage() {
@@ -53,6 +92,13 @@ export default function ProductsPage() {
     const t = setTimeout(() => void load(), 300)
     return () => clearTimeout(t)
   }, [load])
+
+  const stats = useMemo(() => {
+    const totalItems = products.reduce((acc, p) => acc + p.stock_quantity, 0)
+    const lowStock = products.filter((p) => p.is_low_stock).length
+    const stockValue = products.reduce((acc, p) => acc + p.stock_quantity * p.selling_price, 0)
+    return { totalItems, lowStock, stockValue }
+  }, [products])
 
   const openCreate = () => {
     setEditing(null)
@@ -123,46 +169,66 @@ export default function ProductsPage() {
     }
   }
 
-  const lowStockCount = products.filter((p) => p.is_low_stock).length
-
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Estoque</h1>
-          {lowStockCount > 0 && (
-            <p className="mt-1 text-sm font-medium text-orange-600">
-              ⚠️ {lowStockCount} {lowStockCount === 1 ? 'peça está' : 'peças estão'} com estoque baixo
-            </p>
-          )}
-        </div>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-slate-800">Estoque</h1>
         <LimitGate limit="can_create_product" feature="Cadastrar novas peças no estoque">
           <button
             onClick={openCreate}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
           >
             + Nova Peça
           </button>
         </LimitGate>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nome ou marca..."
-          className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Itens em estoque" value={stats.totalItems} icon={icons.box} gradient="blue" />
+        <StatCard
+          label="Estoque baixo"
+          value={stats.lowStock}
+          hint={stats.lowStock > 0 ? 'Necessita reposição' : 'Tudo em ordem'}
+          icon={icons.alert}
+          gradient="orange"
         />
+        <StatCard label="Valor em estoque" value={currency(stats.stockValue)} icon={icons.value} gradient="green" />
+      </div>
+
+      {stats.lowStock > 0 && (
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-orange-200/70 bg-gradient-to-r from-orange-50 to-amber-50 px-5 py-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white shadow-md">
+            {icons.alert}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-orange-800">
+              {stats.lowStock} {stats.lowStock === 1 ? 'peça está' : 'peças estão'} com estoque baixo
+            </p>
+            <p className="text-xs text-orange-600">Ative o filtro abaixo ou cadastre novas peças para reposição.</p>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/60 bg-white p-3 shadow-sm">
+        <div className="relative">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icons.search}</span>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por nome ou marca..."
+            className="w-full max-w-xs rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm focus:border-indigo-500 focus:bg-white focus:outline-none"
+          />
+        </div>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
         >
           <option value="">Todas categorias</option>
           <option value="peca">Peças</option>
           <option value="acessorio">Acessórios</option>
         </select>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="ml-auto flex cursor-pointer items-center gap-2 text-sm text-slate-600">
           <input
             type="checkbox"
             checked={onlyLowStock}
@@ -173,85 +239,119 @@ export default function ProductsPage() {
         </label>
       </div>
 
-      <div className="overflow-x-auto rounded-xl bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-xs uppercase text-slate-400">
+            <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
               <th className="px-5 py-3">Produto</th>
               <th className="px-5 py-3">Categoria</th>
-              <th className="px-5 py-3">Marca</th>
               <th className="px-5 py-3 text-right">Custo</th>
               <th className="px-5 py-3 text-right">Venda</th>
-              <th className="px-5 py-3 text-center">Estoque</th>
-              <th className="px-5 py-3 text-center">Mínimo</th>
+              <th className="px-5 py-3 text-right">Margem</th>
+              <th className="px-5 py-3">Estoque</th>
               <th className="px-5 py-3">Status</th>
               <th className="px-5 py-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr
-                key={product.id}
-                className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${
-                  product.is_low_stock ? 'bg-orange-50/60' : ''
-                }`}
-              >
-                <td className="px-5 py-3">
-                  <p className="font-medium text-slate-800">{product.name}</p>
-                  {product.is_low_stock && (
-                    <p className="text-xs font-semibold text-orange-600">⚠️ Estoque baixo</p>
-                  )}
-                </td>
-                <td className="px-5 py-3 text-slate-600">{product.category_label}</td>
-                <td className="px-5 py-3 text-slate-600">{product.brand ?? '—'}</td>
-                <td className="px-5 py-3 text-right text-slate-600">{currency(product.cost_price)}</td>
-                <td className="px-5 py-3 text-right font-medium text-slate-800">{currency(product.selling_price)}</td>
-                <td className="px-5 py-3 text-center">
-                  <span
-                    className={`inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-xs font-bold ${
-                      product.is_low_stock ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'
-                    }`}
-                  >
-                    {product.stock_quantity}
-                  </span>
-                </td>
-                <td className="px-5 py-3 text-center text-slate-600">{product.min_stock_quantity}</td>
-                <td className="px-5 py-3">
-                  <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      product.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
-                    }`}
-                  >
-                    {product.status === 'active' ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td className="px-5 py-3">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => openEdit(product)}
-                      className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+            {products.map((product) => {
+              const margin =
+                product.cost_price > 0 ? Math.round(((product.selling_price - product.cost_price) / product.cost_price) * 100) : null
+              const stockMax = Math.max(product.min_stock_quantity * 2, product.stock_quantity, 1)
+              return (
+                <tr key={product.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70">
+                  <td className="px-5 py-3.5">
+                    <p className="font-medium text-slate-800">{product.name}</p>
+                    {product.brand && <p className="text-xs text-slate-400">{product.brand}</p>}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        product.category === 'peca'
+                          ? 'bg-indigo-50 text-indigo-700'
+                          : 'bg-violet-50 text-violet-700'
+                      }`}
                     >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => void toggleStatus(product)}
-                      className="rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100"
+                      {product.category_label}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5 text-right text-slate-500">{currency(product.cost_price)}</td>
+                  <td className="px-5 py-3.5 text-right font-medium text-slate-800">{currency(product.selling_price)}</td>
+                  <td className="px-5 py-3.5 text-right">
+                    {margin !== null && (
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          margin >= 50 ? 'bg-emerald-50 text-emerald-700' : margin >= 20 ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'
+                        }`}
+                      >
+                        {margin}%
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className={`h-1.5 rounded-full ${product.is_low_stock ? 'bg-orange-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${Math.min(100, (product.stock_quantity / stockMax) * 100)}%` }}
+                        />
+                      </div>
+                      <span
+                        className={`inline-flex min-w-8 justify-center rounded-full px-2 py-0.5 text-xs font-bold ${
+                          product.is_low_stock ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {product.stock_quantity}
+                      </span>
+                      {product.is_low_stock && (
+                        <span className="text-xs font-semibold text-orange-600">min {product.min_stock_quantity}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        product.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                      }`}
                     >
-                      {product.status === 'active' ? 'Inativar' : 'Ativar'}
-                    </button>
-                    <button
-                      onClick={() => void remove(product)}
-                      className="rounded-md border border-rose-200 px-2.5 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
-                    >
-                      Excluir
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                      {product.status === 'active' ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex justify-end gap-1.5">
+                      <button
+                        onClick={() => openEdit(product)}
+                        title="Editar"
+                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                      >
+                        {icons.edit}
+                      </button>
+                      <button
+                        onClick={() => void toggleStatus(product)}
+                        title={product.status === 'active' ? 'Inativar' : 'Ativar'}
+                        className={`rounded-lg border p-2 transition ${
+                          product.status === 'active'
+                            ? 'border-slate-200 text-slate-500 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600'
+                            : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                        }`}
+                      >
+                        {icons.power}
+                      </button>
+                      <button
+                        onClick={() => void remove(product)}
+                        title="Excluir"
+                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+                      >
+                        {icons.trash}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
             {products.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-5 py-8 text-center text-slate-400">
+                <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
                   Nenhum produto encontrado.
                 </td>
               </tr>
