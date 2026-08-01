@@ -1,0 +1,87 @@
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import axios from 'axios'
+import { api } from '../lib/api'
+import type { Store, TrialLimits, User } from '../types'
+
+interface AuthContextValue {
+  user: User | null
+  store: Store | null
+  limits: TrialLimits | null
+  isLoading: boolean
+  isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
+  refreshLimits: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [store, setStore] = useState<Store | null>(null)
+  const [limits, setLimits] = useState<TrialLimits | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  const refreshLimits = useCallback(async () => {
+    try {
+      const { data } = await api.get<{ data: TrialLimits }>('/store/limits')
+      setLimits(data.data)
+    } catch {
+      setLimits(null)
+    }
+  }, [])
+
+  const fetchUser = useCallback(async () => {
+    try {
+      const { data } = await api.get<{ user: User; store: Store | null }>('/me')
+      setUser(data.user)
+      setStore(data.store)
+      if (data.store) await refreshLimits()
+    } catch {
+      setUser(null)
+      setStore(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [refreshLimits])
+
+  useEffect(() => {
+    void fetchUser()
+  }, [fetchUser])
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      await axios.get('/sanctum/csrf-cookie', { withCredentials: true })
+
+      const { data } = await api.post<{ user: User; store: Store | null }>('/login', { email, password })
+      setUser(data.user)
+      setStore(data.store)
+      if (data.store) await refreshLimits()
+    },
+    [refreshLimits],
+  )
+
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/logout')
+    } finally {
+      setUser(null)
+      setStore(null)
+      setLimits(null)
+    }
+  }, [])
+
+  return (
+    <AuthContext.Provider
+      value={{ user, store, limits, isLoading, isAuthenticated: !!user, login, logout, refreshLimits }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth deve ser usado dentro de AuthProvider')
+  return ctx
+}
