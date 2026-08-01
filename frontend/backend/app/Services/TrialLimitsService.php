@@ -25,6 +25,7 @@ class TrialLimitsService
         if (! $user || $user->isSuperAdmin() || ! $user->store_id) {
             return [
                 'is_trial' => false,
+                'is_suspended' => false,
                 'subscription_status' => null,
                 'os_used' => 0,
                 'os_limit' => self::OS_LIMIT,
@@ -42,9 +43,29 @@ class TrialLimitsService
 
         $store = $user->store;
 
+        if ($store?->isExpired() && ! $user->isSuperAdmin()) {
+            return [
+                'is_trial' => false,
+                'is_suspended' => true,
+                'subscription_status' => $store->subscription_status->value,
+                'os_used' => 0,
+                'os_limit' => self::OS_LIMIT,
+                'clients_used' => 0,
+                'clients_limit' => self::CLIENTS_LIMIT,
+                'can_create_os' => false,
+                'can_create_client' => false,
+                'can_create_product' => false,
+                'can_see_history' => false,
+                'can_export' => false,
+                'can_see_financial' => false,
+                'trial_limit_at' => $store->trial_limit_at,
+            ];
+        }
+
         if (! $store?->isTrial()) {
             return [
                 'is_trial' => false,
+                'is_suspended' => false,
                 'subscription_status' => $store?->subscription_status->value,
                 'os_used' => 0,
                 'os_limit' => self::OS_LIMIT,
@@ -68,6 +89,7 @@ class TrialLimitsService
 
         return [
             'is_trial' => true,
+            'is_suspended' => false,
             'subscription_status' => $store->subscription_status->value,
             'os_used' => $osUsed,
             'os_limit' => self::OS_LIMIT,

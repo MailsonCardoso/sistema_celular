@@ -15,12 +15,16 @@ class StoreServiceOrderRequest extends FormRequest
 
     public function rules(): array
     {
+        $storeId = $this->user()?->store_id;
+
         return [
-            'client_id' => ['required', 'integer', 'exists:clients,id'],
+            'client_id' => ['required', 'integer', Rule::exists('clients', 'id')->where('store_id', $storeId)],
             'technician_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('users', 'id')->where('role', UserRole::Tecnico->value),
+                Rule::exists('users', 'id')
+                    ->where('role', UserRole::Tecnico->value)
+                    ->where('store_id', $storeId),
             ],
             'device_brand' => ['required', 'string', 'max:100'],
             'device_model' => ['required', 'string', 'max:100'],

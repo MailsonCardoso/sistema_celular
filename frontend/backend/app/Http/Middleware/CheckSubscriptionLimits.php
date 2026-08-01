@@ -6,6 +6,7 @@ use App\Services\TrialLimitsService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Verifica os limites da versão trial nas rotas de criação.
@@ -18,6 +19,10 @@ class CheckSubscriptionLimits
     public function handle(Request $request, Closure $next, string ...$resources): Response
     {
         $user = $request->user();
+
+        if (! $user->isSuperAdmin() && $user->store?->isExpired()) {
+            throw new HttpException(403, 'Sua loja está suspensa. Fale com o suporte para reativar o acesso.');
+        }
 
         foreach ($resources as $resource) {
             match ($resource) {

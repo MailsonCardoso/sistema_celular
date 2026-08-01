@@ -17,7 +17,12 @@ class StoreClientRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'cpf_cnpj' => ['nullable', 'string', 'max:20', 'unique:clients,cpf_cnpj'],
+            'cpf_cnpj' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('clients', 'cpf_cnpj')->where('store_id', $this->user()?->store_id),
+            ],
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],

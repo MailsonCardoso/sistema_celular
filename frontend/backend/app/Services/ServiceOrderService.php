@@ -71,6 +71,8 @@ class ServiceOrderService
     public function update(ServiceOrder $order, array $data, User $actor): ServiceOrder
     {
         return DB::transaction(function () use ($order, $data, $actor) {
+            $this->assertOrderEditable($order);
+
             $oldServiceCost = (float) $order->service_cost;
 
             $order->fill($data);
@@ -88,6 +90,10 @@ class ServiceOrderService
 
             $order->save();
             $order->recalculateTotal();
+
+            if ($order->status === ServiceOrderStatus::Completed) {
+                $this->financialTransactions->syncCompletedOrderTotal($order);
+            }
 
             return $order;
         });
@@ -147,6 +153,10 @@ class ServiceOrderService
 
             $order->recalculateTotal();
 
+            if ($order->status === ServiceOrderStatus::Completed) {
+                $this->financialTransactions->syncCompletedOrderTotal($order);
+            }
+
             return $item->load('product');
         });
     }
@@ -175,6 +185,10 @@ class ServiceOrderService
             );
 
             $order->recalculateTotal();
+
+            if ($order->status === ServiceOrderStatus::Completed) {
+                $this->financialTransactions->syncCompletedOrderTotal($order);
+            }
         });
     }
 

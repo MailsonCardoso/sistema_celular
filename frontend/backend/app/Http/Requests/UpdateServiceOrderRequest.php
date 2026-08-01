@@ -15,11 +15,15 @@ class UpdateServiceOrderRequest extends FormRequest
 
     public function rules(): array
     {
+        $storeId = $this->user()?->store_id;
+
         return [
             'technician_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('users', 'id')->where('role', UserRole::Tecnico->value),
+                Rule::exists('users', 'id')
+                    ->where('role', UserRole::Tecnico->value)
+                    ->where('store_id', $storeId),
             ],
             'device_brand' => ['sometimes', 'required', 'string', 'max:100'],
             'device_model' => ['sometimes', 'required', 'string', 'max:100'],

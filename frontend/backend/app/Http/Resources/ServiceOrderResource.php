@@ -18,7 +18,10 @@ class ServiceOrderResource extends JsonResource
             'device_brand' => $this->device_brand,
             'device_model' => $this->device_model,
             'device_imei' => $this->device_imei,
-            'device_password' => $this->device_password,
+            'device_password' => $this->when(
+                $request->route()?->getName() === 'api.service-orders.show',
+                $this->device_password,
+            ),
             'reported_issue' => $this->reported_issue,
             'technical_diagnosis' => $this->technical_diagnosis,
             'status' => $this->status->value,

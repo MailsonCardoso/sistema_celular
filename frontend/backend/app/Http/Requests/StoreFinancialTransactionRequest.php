@@ -18,9 +18,11 @@ class StoreFinancialTransactionRequest extends FormRequest
 
     public function rules(): array
     {
+        $storeId = $this->user()?->store_id;
+
         return [
-            'client_id' => ['nullable', 'integer', 'exists:clients,id'],
-            'service_order_id' => ['nullable', 'integer', 'exists:service_orders,id'],
+            'client_id' => ['nullable', 'integer', Rule::exists('clients', 'id')->where('store_id', $storeId)],
+            'service_order_id' => ['nullable', 'integer', Rule::exists('service_orders', 'id')->where('store_id', $storeId)],
             'description' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::in(TransactionType::values())],
             'category' => ['required', Rule::in(TransactionCategory::values())],

@@ -15,6 +15,7 @@ import ProductsPage from './pages/ProductsPage'
 import FinancialPage from './pages/FinancialPage'
 import StoresPage from './pages/StoresPage'
 import UsersPage from './pages/UsersPage'
+import NotFoundPage from './pages/NotFoundPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -33,7 +34,7 @@ createRoot(document.getElementById('root')!).render(
           >
             <Route index element={<DashboardPage />} />
             <Route path="ordens" element={<ServiceOrdersPage />} />
-            <Route path="equipe" element={<PrivateRoute roles={['admin']}><UsersPage /></PrivateRoute>} />
+            <Route path="equipe" element={<PrivateRoute roles={['admin', 'super_admin']}><UsersPage /></PrivateRoute>} />
             <Route
               path="admin/lojas"
               element={
@@ -46,7 +47,7 @@ createRoot(document.getElementById('root')!).render(
             <Route
               path="clientes"
               element={
-                <PrivateRoute roles={['admin', 'atendente']}>
+                <PrivateRoute roles={['admin', 'atendente', 'super_admin']}>
                   <ClientsPage />
                 </PrivateRoute>
               }
@@ -54,7 +55,7 @@ createRoot(document.getElementById('root')!).render(
             <Route
               path="clientes/:id"
               element={
-                <PrivateRoute roles={['admin', 'atendente']}>
+                <PrivateRoute roles={['admin', 'atendente', 'super_admin']}>
                   <ClientDetailPage />
                 </PrivateRoute>
               }
@@ -62,7 +63,7 @@ createRoot(document.getElementById('root')!).render(
             <Route
               path="estoque"
               element={
-                <PrivateRoute roles={['admin', 'atendente']}>
+                <PrivateRoute roles={['admin', 'atendente', 'super_admin']}>
                   <ProductsPage />
                 </PrivateRoute>
               }
@@ -70,14 +71,14 @@ createRoot(document.getElementById('root')!).render(
             <Route
               path="financeiro"
               element={
-                <PrivateRoute roles={['admin']}>
+                <PrivateRoute roles={['admin', 'super_admin']}>
                   <FinancialPage />
                 </PrivateRoute>
               }
             />
           </Route>
 
-          <Route path="*" element={<LoginPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

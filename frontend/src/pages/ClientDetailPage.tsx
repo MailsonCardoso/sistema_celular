@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { api } from '../lib/api'
+import { api, errorMessage } from '../lib/api'
 import { currency, dateBR } from '../lib/format'
 import StatusBadge from '../components/StatusBadge'
+import OrderDetail from '../components/OrderDetail'
 import { useAuth } from '../context/AuthContext'
 import type { Client, FinancialTransaction, ServiceOrder } from '../types'
 
@@ -12,8 +13,13 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState<Client | null>(null)
   const [orders, setOrders] = useState<ServiceOrder[]>([])
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [detailId, setDetailId] = useState<number | null>(null)
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true)
+    setError('')
     api
       .get<{ client: Client; service_orders: ServiceOrder[]; financial_transactions: FinancialTransaction[] }>(
         `/clients/${id}`,
@@ -23,16 +29,40 @@ export default function ClientDetailPage() {
         setOrders(data.service_orders)
         setTransactions(data.financial_transactions)
       })
-      .catch(() => {})
+      .catch((err) => {
+        setClient(null)
+        setError(errorMessage(err))
+      })
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    void load()
   }, [id])
 
-  if (!client) {
+  if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
       </div>
     )
   }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-16">
+        <p className="text-sm text-rose-600">{error}</p>
+        <button
+          onClick={load}
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    )
+  }
+
+  if (!client) return null
 
   const totalPaid = transactions
     .filter((t) => t.type === 'income' && t.status === 'paid')
@@ -100,10 +130,10 @@ export default function ClientDetailPage() {
           <h2 className="mb-4 text-sm font-semibold text-slate-700">Histórico de Ordens de Serviço</h2>
           <div className="space-y-3">
             {orders.map((order) => (
-              <Link
+              <button
                 key={order.id}
-                to="/ordens"
-                className="block rounded-lg border border-slate-200 p-4 transition hover:border-indigo-300 hover:bg-indigo-50/50"
+                onClick={() => setDetailId(order.id)}
+                className="block w-full rounded-lg border border-slate-200 p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50/50"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-indigo-600">OS #{order.id}</span>
@@ -116,7 +146,7 @@ export default function ClientDetailPage() {
                   <span>Entrada: {dateBR(order.entry_date)}</span>
                   <span className="font-semibold text-slate-700">{currency(order.total_amount)}</span>
                 </div>
-              </Link>
+              </button>
             ))}
             {orders.length === 0 && <p className="py-4 text-center text-sm text-slate-400">Nenhuma OS.</p>}
           </div>
@@ -125,44 +155,52 @@ export default function ClientDetailPage() {
         {limits?.can_see_financial && (
           <div className="rounded-xl bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-sm font-semibold text-slate-700">Histórico Financeiro</h2>
-          <div className="space-y-3">
-            {transactions.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-700">{tx.description}</p>
-                  <p className="mt-0.5 text-xs text-slate-400">
-                    {tx.category_label} · {tx.payment_method_label ?? '—'} · {dateBR(tx.due_date)}
-                  </p>
+            <div className="space-y-3">
+              {transactions.map((tx) => (
+                <div key={tx.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-700">{tx.description}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      {tx.category_label} · {tx.payment_method_label ?? '—'} · {dateBR(tx.due_date)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p
+                      className={`text-sm font-bold ${
+                        tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'
+                      }`}
+                    >
+                      {tx.type === 'income' ? '+' : '−'} {currency(tx.amount)}
+                    </p>
+                    <span
+                      className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        tx.status === 'paid'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : tx.status === 'pending'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-slate-200 text-slate-500'
+                      }`}
+                    >
+                      {tx.status_label}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p
-                    className={`text-sm font-bold ${
-                      tx.type === 'income' ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
-                  >
-                    {tx.type === 'income' ? '+' : '−'} {currency(tx.amount)}
-                  </p>
-                  <span
-                    className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                      tx.status === 'paid'
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : tx.status === 'pending'
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-slate-200 text-slate-500'
-                    }`}
-                  >
-                    {tx.status_label}
-                  </span>
-                </div>
-              </div>
-            ))}
-            {transactions.length === 0 && (
-              <p className="py-4 text-center text-sm text-slate-400">Nenhuma transação.</p>
-            )}
+              ))}
+              {transactions.length === 0 && (
+                <p className="py-4 text-center text-sm text-slate-400">Nenhuma transação.</p>
+              )}
+            </div>
           </div>
-        </div>
         )}
       </div>
+
+      <OrderDetail
+        orderId={detailId}
+        onClose={() => setDetailId(null)}
+        onChanged={() => {
+          void load()
+        }}
+      />
     </div>
   )
 }

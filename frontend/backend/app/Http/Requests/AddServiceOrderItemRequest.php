@@ -19,7 +19,9 @@ class AddServiceOrderItemRequest extends FormRequest
             'product_id' => [
                 'required',
                 'integer',
-                Rule::exists('products', 'id')->where('status', ProductStatus::Active->value),
+                Rule::exists('products', 'id')
+                    ->where('status', ProductStatus::Active->value)
+                    ->where('store_id', $this->user()?->store_id),
             ],
             'quantity' => ['required', 'integer', 'min:1'],
             'unit_price' => ['nullable', 'numeric', 'min:0'],

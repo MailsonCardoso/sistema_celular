@@ -17,7 +17,14 @@ class UpdateClientRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
-            'cpf_cnpj' => ['nullable', 'string', 'max:20', Rule::unique('clients', 'cpf_cnpj')->ignore($this->route('client'))],
+            'cpf_cnpj' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('clients', 'cpf_cnpj')
+                    ->ignore($this->route('client'))
+                    ->where('store_id', $this->user()?->store_id),
+            ],
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],

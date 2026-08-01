@@ -58,9 +58,19 @@ class Store extends Model
         return $this->subscription_status->isFullAccess();
     }
 
+    /**
+     * Trial cujo prazo (trial_limit_at) já venceu.
+     */
+    public function isTrialOverdue(): bool
+    {
+        return $this->subscription_status->isTrial()
+            && $this->trial_limit_at !== null
+            && $this->trial_limit_at->isPast();
+    }
+
     public function isExpired(): bool
     {
-        return $this->subscription_status->isExpired();
+        return $this->subscription_status->isExpired() || $this->isTrialOverdue();
     }
 
     /**
@@ -69,6 +79,12 @@ class Store extends Model
      */
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('subscription_status', '!=', \App\Enums\SubscriptionStatus::Expired);
+        return $query
+            ->where('subscription_status', '!=', \App\Enums\SubscriptionStatus::Expired)
+            ->where(function (Builder $q) {
+                $q->where('subscription_status', '!=', \App\Enums\SubscriptionStatus::TrialActive)
+                    ->orWhereNull('trial_limit_at')
+                    ->orWhere('trial_limit_at', '>=', now());
+            });
     }
 }

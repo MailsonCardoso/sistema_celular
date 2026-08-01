@@ -53,4 +53,19 @@ class FinancialTransactionService
                 ]);
         });
     }
+
+    /**
+     * Mantém o valor da transação pendente da OS concluída em sincronia
+     * quando itens ou mão de obra mudam antes da entrega.
+     */
+    public function syncCompletedOrderTotal(ServiceOrder $order): void
+    {
+        DB::transaction(function () use ($order) {
+            FinancialTransaction::query()
+                ->where('service_order_id', $order->id)
+                ->where('type', TransactionType::Income)
+                ->where('status', TransactionStatus::Pending)
+                ->update(['amount' => $order->total_amount]);
+        });
+    }
 }

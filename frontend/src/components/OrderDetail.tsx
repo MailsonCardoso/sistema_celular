@@ -39,21 +39,37 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   const [comment, setComment] = useState('')
   const [newStatus, setNewStatus] = useState<ServiceOrderStatusValue>('opened')
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState('')
   const [busy, setBusy] = useState(false)
   const [history, setHistory] = useState<ServiceHistory[]>([])
 
   const load = async (id: number) => {
-    const { data } = await api.get<{ data: ServiceOrder }>(`/service-orders/${id}`)
-    setOrder(data.data)
-    setHistory(data.data.history ?? [])
+    setLoadError('')
+    try {
+      const { data } = await api.get<{ data: ServiceOrder }>(`/service-orders/${id}`)
+      setOrder(data.data)
+      setHistory(data.data.history ?? [])
+    } catch (err) {
+      setOrder(null)
+      setLoadError(errorMessage(err))
+    }
   }
 
   useEffect(() => {
     if (!orderId) return
     setError('')
+    setOrder(null)
+    setNewStatus('opened')
     void load(orderId)
     api.get<{ data: Product[] }>('/products/options').then(({ data }) => setProducts(data.data)).catch(() => {})
   }, [orderId])
+
+  useEffect(() => {
+    if (order) {
+      const next = transitions[order.status][0]
+      if (next) setNewStatus(next)
+    }
+  }, [order?.status])
 
   if (!orderId) return null
 
@@ -141,9 +157,21 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   return (
     <Modal title={order ? `OS #${order.id} - ${order.device_brand} ${order.device_model}` : 'Carregando...'} open={!!orderId} onClose={onClose} wide>
       {!order ? (
-        <div className="flex justify-center py-10">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
-        </div>
+        loadError ? (
+          <div className="flex flex-col items-center gap-3 py-10">
+            <p className="text-sm text-rose-600">{loadError}</p>
+            <button
+              onClick={() => orderId && void load(orderId)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-center py-10">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          </div>
+        )
       ) : (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
