@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
             StartSession::class,
             ShareErrorsFromSession::class,
         ]);
+
+        $middleware->redirectGuestsTo(
+            fn () => response()->json(['message' => 'Não autenticado.'], 401),
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
