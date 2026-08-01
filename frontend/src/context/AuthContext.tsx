@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
-import axios from 'axios'
-import { api } from '../lib/api'
+import { api, csrfClient } from '../lib/api'
 import type { Store, TrialLimits, User } from '../types'
 
 interface AuthContextValue {
@@ -51,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string) => {
-      await axios.get('/sanctum/csrf-cookie', { withCredentials: true })
+      await csrfClient.get('/sanctum/csrf-cookie')
 
       const { data } = await api.post<{ user: User; store: Store | null }>('/login', { email, password })
       setUser(data.user)
