@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../lib/api'
 import { currency, dateBR } from '../lib/format'
+import { useAuth } from '../context/AuthContext'
 import type { DashboardData } from '../types'
 import StatusBadge from '../components/StatusBadge'
 import StatCard from '../components/StatCard'
@@ -65,6 +66,7 @@ const icons = {
 }
 
 export default function DashboardPage() {
+  const { user } = useAuth()
   const [data, setData] = useState<DashboardData | null>(null)
 
   useEffect(() => {
@@ -78,6 +80,8 @@ export default function DashboardPage() {
       </div>
     )
   }
+
+  const showCards = user?.role === 'admin' || user?.role === 'super_admin'
 
   const cards = [
     { label: 'OS em aberto', value: data.open_orders, icon: icons.clipboard, gradient: 'blue' },
@@ -108,11 +112,13 @@ export default function DashboardPage() {
     <div>
       <h1 className="mb-6 text-2xl font-bold text-slate-800">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-        {cards.map((card) => (
-          <StatCard key={card.label} label={card.label} value={card.value} icon={card.icon} gradient={card.gradient} />
-        ))}
-      </div>
+      {showCards && (
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+          {cards.map((card) => (
+            <StatCard key={card.label} label={card.label} value={card.value} icon={card.icon} gradient={card.gradient} />
+          ))}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-200/60 bg-white p-6 shadow-sm">
