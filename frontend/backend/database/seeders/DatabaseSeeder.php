@@ -26,5 +26,8 @@ class DatabaseSeeder extends Seeder
         $this->callWith(ClientSeeder::class, ['store' => $trialFullStore, 'count' => 10]);
         $this->callWith(ProductSeeder::class, ['store' => $trialFullStore, 'count' => 4]);
         $this->callWith(ServiceOrderSeeder::class, ['store' => $trialFullStore, 'osLimit' => 5, 'withExpenses' => false]);
+
+        // Loja em trial vazia com 2 peças no estoque para testar a tela de estoque.
+        $this->call(TrialProductsSeeder::class);
     }
 }
