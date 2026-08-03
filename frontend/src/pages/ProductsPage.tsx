@@ -150,7 +150,7 @@ export default function ProductsPage() {
         min_stock_quantity: Number(form.min_stock_quantity) || 0,
       }
       if (editing) {
-        await api.put(`/products/${editing.id}`, payload)
+        await api.patch(`/products/${editing.id}`, payload)
       } else {
         await api.post('/products', payload)
       }
@@ -164,7 +164,7 @@ export default function ProductsPage() {
   })
 
   const toggleStatus = async (product: Product) => {
-    await api.put(`/products/${product.id}`, { status: product.status === 'active' ? 'inactive' : 'active' })
+    await api.patch(`/products/${product.id}`, { status: product.status === 'active' ? 'inactive' : 'active' })
     await load()
   }
 

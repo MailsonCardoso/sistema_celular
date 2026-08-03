@@ -171,7 +171,7 @@ export default function FinancialPage() {
 
   const markPaid = async (tx: FinancialTransaction) => {
     if (tx.type === 'expense') return
-    await api.put(`/financial-transactions/${tx.id}`, {
+    await api.patch(`/financial-transactions/${tx.id}`, {
       status: 'paid',
       paid_date: new Date().toISOString().slice(0, 10),
     })

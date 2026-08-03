@@ -142,7 +142,7 @@ export default function ClientsPage() {
         address: form.address || null,
       }
       if (editing) {
-        await api.put(`/clients/${editing.id}`, payload)
+        await api.patch(`/clients/${editing.id}`, payload)
       } else {
         await api.post('/clients', payload)
       }
@@ -157,7 +157,7 @@ export default function ClientsPage() {
   })
 
   const toggleStatus = async (client: Client) => {
-    await api.put(`/clients/${client.id}`, {
+    await api.patch(`/clients/${client.id}`, {
       status: client.status === 'active' ? 'inactive' : 'active',
     })
     await load(search)
