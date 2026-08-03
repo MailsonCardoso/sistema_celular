@@ -87,6 +87,55 @@ export default function FinancialPage() {
     )
   }, [transactions, search])
 
+  const monthOptions = useMemo(() => {
+    const names = [
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
+    ]
+    const options: { value: string; label: string }[] = []
+    const now = new Date()
+    for (let i = 0; i < 24; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      options.push({
+        value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: `${names[d.getMonth()]}/${d.getFullYear()}`,
+      })
+    }
+    return options
+  }, [])
+
+  const selectedMonth = useMemo(() => {
+    if (!dateFrom || !dateTo) return ''
+    const [y, m, d] = dateFrom.split('-').map(Number)
+    if (!y || !m || d !== 1) return ''
+    const [ty, tm, td] = dateTo.split('-').map(Number)
+    const lastDay = new Date(y, m, 0).getDate()
+    if (ty !== y || tm !== m || td !== lastDay) return ''
+    return `${y}-${String(m).padStart(2, '0')}`
+  }, [dateFrom, dateTo])
+
+  const applyMonth = (value: string) => {
+    if (!value) {
+      setDateFrom('')
+      setDateTo('')
+      return
+    }
+    const [y, m] = value.split('-').map(Number)
+    const padded = `${y}-${String(m).padStart(2, '0')}`
+    setDateFrom(`${padded}-01`)
+    setDateTo(`${padded}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`)
+  }
+
   const openCreate = () => {
     setForm({ ...emptyForm, due_date: new Date().toISOString().slice(0, 10) })
     setServerErrors({})
@@ -246,6 +295,21 @@ export default function FinancialPage() {
             <option value="pending">Pendente</option>
             <option value="paid">Pago</option>
             <option value="cancelled">Cancelado</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-600">Mês/Ano</label>
+          <select
+            value={selectedMonth}
+            onChange={(e) => applyMonth(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          >
+            <option value="">Todos os períodos</option>
+            {monthOptions.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
           </select>
         </div>
         <div>
