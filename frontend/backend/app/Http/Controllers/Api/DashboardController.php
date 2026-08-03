@@ -38,7 +38,7 @@ class DashboardController extends Controller
             ->count();
 
         $completedThisMonth = (clone $orderQuery)
-            ->where('status', ServiceOrderStatus::Completed)
+            ->whereIn('status', [ServiceOrderStatus::Completed, ServiceOrderStatus::Delivered])
             ->whereDate('updated_at', '>=', $monthStart)
             ->count();
 
