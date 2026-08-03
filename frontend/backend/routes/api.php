@@ -57,6 +57,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/products/options', [ProductController::class, 'options'])
         ->name('api.products.options')
         ->middleware('role:admin,atendente');
+    Route::get('/products/summary', [ProductController::class, 'summary'])
+        ->name('api.products.summary')
+        ->middleware('role:admin,atendente');
     Route::get('/products', [ProductController::class, 'index'])
         ->name('api.products.index')
         ->middleware('role:admin,atendente');

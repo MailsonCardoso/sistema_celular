@@ -49,6 +49,23 @@ class ProductController extends Controller
     }
 
     /**
+     * Resumo do estoque da loja (todos os produtos, sem filtros nem paginação).
+     */
+    public function summary(): JsonResponse
+    {
+        $stockValue = (float) Product::query()
+            ->selectRaw('COALESCE(SUM(stock_quantity * selling_price), 0) as value')
+            ->value('value');
+
+        $totalItems = (int) Product::query()->sum('stock_quantity');
+
+        return response()->json([
+            'stock_value' => $stockValue,
+            'total_items' => $totalItems,
+        ]);
+    }
+
+    /**
      * Opções compactas para selects do frontend (somente ativos).
      */
     public function options(Request $request): AnonymousResourceCollection

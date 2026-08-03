@@ -70,6 +70,7 @@ const icons = {
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
+  const [summary, setSummary] = useState<{ stock_value: number; total_items: number } | null>(null)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [onlyLowStock, setOnlyLowStock] = useState(false)
@@ -89,6 +90,10 @@ export default function ProductsPage() {
     if (onlyLowStock) params.low_stock = '1'
     const { data } = await api.get<{ data: Product[] }>('/products', { params })
     setProducts(data.data)
+    api
+      .get<{ stock_value: number; total_items: number }>('/products/summary')
+      .then(({ data }) => setSummary(data))
+      .catch(() => {})
   }, [search, category, onlyLowStock])
 
   useEffect(() => {
@@ -97,11 +102,13 @@ export default function ProductsPage() {
   }, [load])
 
   const stats = useMemo(() => {
-    const totalItems = products.reduce((acc, p) => acc + p.stock_quantity, 0)
     const lowStock = products.filter((p) => p.is_low_stock).length
-    const stockValue = products.reduce((acc, p) => acc + p.stock_quantity * p.selling_price, 0)
-    return { totalItems, lowStock, stockValue }
-  }, [products])
+    return {
+      totalItems: summary?.total_items ?? 0,
+      lowStock,
+      stockValue: summary?.stock_value ?? 0,
+    }
+  }, [products, summary])
 
   const openCreate = () => {
     setEditing(null)
