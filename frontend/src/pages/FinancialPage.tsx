@@ -5,7 +5,7 @@ import { Field, Input, Select, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
 import StatCard from '../components/StatCard'
-import type { Client, FinancialTransaction } from '../types'
+import type { Client, FinancialTransaction, Product } from '../types'
 
 interface TxForm {
   description: string
@@ -50,6 +50,18 @@ export default function FinancialPage() {
   const [error, setError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState<FinancialTransaction | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const [saleOpen, setSaleOpen] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [selProduct, setSelProduct] = useState('')
+  const [selQuantity, setSelQuantity] = useState('1')
+  const [selPaymentMethod, setSelPaymentMethod] = useState('')
+  const [selStatus, setSelStatus] = useState('pending')
+  const [selDueDate, setSelDueDate] = useState(new Date().toISOString().slice(0, 10))
+  const [selClient, setSelClient] = useState('')
+  const [selDescription, setSelDescription] = useState('')
+  const selProductObj = products.find((p) => p.id === Number(selProduct))
+  const selAmount = selProductObj ? selProductObj.selling_price * Number(selQuantity || 1) : 0
   const { serverErrors, setServerErrors, handleSubmit } = useFormErrors()
 
   const load = useCallback(async () => {
@@ -156,6 +168,50 @@ export default function FinancialPage() {
     api.get<{ data: Client[] }>('/clients/options').then(({ data }) => setClients(data.data)).catch(() => {})
   }
 
+  const openSale = () => {
+    setSaleOpen(true)
+    setError('')
+    setSelProduct('')
+    setSelQuantity('1')
+    setSelPaymentMethod('')
+    setSelStatus('pending')
+    setSelDueDate(new Date().toISOString().slice(0, 10))
+    setSelClient('')
+    setSelDescription('')
+    api
+      .get<{ data: Product[] }>('/products/options')
+      .then(({ data }) => setProducts(data.data.filter((p) => p.category === 'acessorio' && p.stock_quantity > 0)))
+      .catch(() => setProducts([]))
+    if (clients.length === 0) {
+      api.get<{ data: Client[] }>('/clients/options').then(({ data }) => setClients(data.data)).catch(() => {})
+    }
+  }
+
+  const saveSale = handleSubmit(async (e) => {
+    e.preventDefault()
+    if (!selProduct || !selQuantity || !selDueDate) return
+    setSaving(true)
+    setError('')
+    try {
+      await api.post('/financial-sales', {
+        product_id: Number(selProduct),
+        quantity: Number(selQuantity),
+        client_id: selClient ? Number(selClient) : null,
+        payment_method: selPaymentMethod || null,
+        status: selStatus,
+        due_date: selDueDate,
+        paid_date: selStatus === 'paid' ? selDueDate : null,
+        description: selDescription || null,
+      })
+      setSaleOpen(false)
+      await load()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSaving(false)
+    }
+  })
+
   const save = handleSubmit(async () => {
     setSaving(true)
     setError('')
@@ -206,12 +262,30 @@ export default function FinancialPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-800">Financeiro</h1>
-        <button
-          onClick={openCreate}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-        >
-          + Novo Lançamento
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={openSale}
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 12h4m-2 2l-2-2 2-2zm7-6h.01M3 8h18v10a2 2 0 002 2h3m-3-5a2 2 0 11-4 0 2 2 0 014 0zm-5 0a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+              Vender acessório
+            </span>
+          </button>
+          <button
+            onClick={openCreate}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+          >
+            + Novo Lançamento
+          </button>
+        </div>
       </div>
 
       {summary && (
@@ -626,6 +700,114 @@ export default function FinancialPage() {
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
               {saving ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal title="Vender acessório" open={saleOpen} onClose={() => setSaleOpen(false)} wide>
+        <form onSubmit={saveSale} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Produto (acessório)" required>
+            <Select
+              required
+              value={selProduct}
+              onChange={(e) => setSelProduct(e.target.value)}
+            >
+              <option value="">Selecione um acessório...</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} — {p.brand ?? ''} ({p.stock_quantity} disp.)
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Quantidade" required>
+            <Input
+              required
+              type="number"
+              min={1}
+              max={selProductObj?.stock_quantity ?? 1}
+              value={selQuantity}
+              onChange={(e) => setSelQuantity(e.target.value)}
+              placeholder="1"
+            />
+          </Field>
+
+          <Field label="Valor unitário">
+            <Input
+              type="text"
+              value={currency(selAmount / Number(selQuantity || 1))}
+              readOnly
+              placeholder="automático"
+              className="bg-slate-50"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              Produto: {selProductObj ? currency(selProductObj.selling_price) : '-'}
+            </p>
+          </Field>
+          <Field label="Total (R$)">
+            <Input type="text" value={currency(selAmount)} readOnly placeholder="automático" className="font-semibold" />
+          </Field>
+
+          <Field label="Cliente (opcional)">
+            <Select value={selClient} onChange={(e) => setSelClient(e.target.value)}>
+              <option value="">Sem cliente vinculado</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Forma de pagamento">
+            <Select value={selPaymentMethod} onChange={(e) => setSelPaymentMethod(e.target.value)}>
+              <option value="">Selecione...</option>
+              <option value="cash">Dinheiro</option>
+              <option value="credit_card">Cartão de Crédito</option>
+              <option value="debit_card">Cartão de Débito</option>
+              <option value="pix">Pix</option>
+              <option value="bank_transfer">Transferência</option>
+            </Select>
+          </Field>
+
+          <div className="sm:col-span-2">
+            <Field label="Observação">
+              <Input
+                value={selDescription}
+                onChange={(e) => setSelDescription(e.target.value)}
+                placeholder="Ex: Venda de capa iPhone — opcional"
+              />
+            </Field>
+          </div>
+
+          <Field label="Status" required>
+            <Select value={selStatus} onChange={(e) => setSelStatus(e.target.value)}>
+              <option value="paid">Pago</option>
+              <option value="pending">Pendente (a receber)</option>
+            </Select>
+          </Field>
+          <Field label="Vencimento" required>
+            <Input required type="date" value={selDueDate} onChange={(e) => setSelDueDate(e.target.value)} />
+          </Field>
+
+          {error && (
+            <div className="sm:col-span-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
+          )}
+
+          <div className="sm:col-span-2 flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setSaleOpen(false)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving || !selProduct || !selQuantity || !selDueDate}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+            >
+              {saving ? 'Salvando...' : 'Confirmar venda'}
             </button>
           </div>
         </form>

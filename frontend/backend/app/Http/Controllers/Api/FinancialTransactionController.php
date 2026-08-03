@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\PaymentMethod;
+use App\Enums\ProductCategory;
+use App\Enums\TransactionCategory;
 use App\Enums\TransactionStatus;
 use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
@@ -9,9 +12,13 @@ use App\Http\Requests\StoreFinancialTransactionRequest;
 use App\Http\Requests\UpdateFinancialTransactionRequest;
 use App\Http\Resources\FinancialTransactionResource;
 use App\Models\FinancialTransaction;
+use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class FinancialTransactionController extends Controller
 {
@@ -51,6 +58,57 @@ class FinancialTransactionController extends Controller
         return FinancialTransactionResource::collection(
             $query->paginate($request->integer('per_page', 15))
         );
+    }
+
+    /**
+     * Venda avulsa de um acessório (debita o estoque e cria a entrada financeira).
+     */
+    public function sale(Request $request): FinancialTransactionResource
+    {
+        $validated = $request->validate([
+            'product_id' => [
+                'required',
+                'integer',
+                Rule::exists('products', 'id')->where('status', 'active'),
+            ],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'client_id' => ['nullable', 'integer', Rule::exists('clients', 'id')],
+            'payment_method' => ['nullable', Rule::in(PaymentMethod::values())],
+            'status' => ['nullable', Rule::in(TransactionStatus::values())],
+            'due_date' => ['required', 'date'],
+            'paid_date' => ['nullable', 'date'],
+            'description' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $product = Product::query()->findOrFail($validated['product_id']);
+
+        if ($product->category !== ProductCategory::Acessorio || $product->stock_quantity < $validated['quantity']) {
+            throw new HttpException(
+                422,
+                'Produto indisponível: selecione um acessório com estoque suficiente.'
+            );
+        }
+
+        return DB::transaction(function () use ($product, $validated) {
+            $product->decrement('stock_quantity', $validated['quantity']);
+
+            /** @var FinancialTransaction $tx */
+            $tx = FinancialTransaction::create([
+                'store_id' => $product->store_id,
+                'client_id' => $validated['client_id'],
+                'description' => trim((string) ($validated['description'] ?? ''))
+                    ?: "Venda de acessório: {$product->name}",
+                'type' => TransactionType::Income,
+                'category' => TransactionCategory::AccessoriesSale,
+                'amount' => $product->selling_price * $validated['quantity'],
+                'payment_method' => $validated['payment_method'],
+                'status' => $validated['status'] ?? TransactionStatus::Pending,
+                'due_date' => $validated['due_date'],
+                'paid_date' => $validated['paid_date'],
+            ]);
+
+            return new FinancialTransactionResource($tx);
+        });
     }
 
     /**

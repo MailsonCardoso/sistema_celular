@@ -104,7 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/financial-transactions', [FinancialTransactionController::class, 'index'])
         ->name('api.financial-transactions.index')
-        ->middleware('role:admin', 'limits:financial');
+        ->middleware('role:admin,atendente', 'limits:financial');
     Route::post('/financial-transactions', [FinancialTransactionController::class, 'store'])
         ->name('api.financial-transactions.store')
         ->middleware('role:admin', 'limits:financial');
@@ -119,7 +119,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('role:admin', 'limits:financial');
     Route::get('/financial/report', [FinancialTransactionController::class, 'report'])
         ->name('api.financial.report')
-        ->middleware('role:admin', 'limits:financial');
+        ->middleware('role:admin,atendente', 'limits:financial');
+    Route::post('/financial-sales', [FinancialTransactionController::class, 'sale'])
+        ->name('api.financial-sales.store')
+        ->middleware('role:admin,atendente', 'limits:financial');
 
     Route::prefix('admin')->middleware('role:super_admin')->group(function () {
         Route::get('/stores', [AdminStoreController::class, 'index'])->name('api.admin.stores.index');
