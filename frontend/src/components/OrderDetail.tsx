@@ -35,7 +35,6 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
   const [quantity, setQuantity] = useState('1')
-  const [statusComment, setStatusComment] = useState('')
   const [comment, setComment] = useState('')
   const [diagnosis, setDiagnosis] = useState('')
   const [discount, setDiscount] = useState('')
@@ -92,9 +91,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
     try {
       const { data } = await api.patch<{ data: ServiceOrder }>(`/service-orders/${orderId}/status`, {
         status,
-        comment: statusComment.trim() || null,
       })
-      setStatusComment('')
       notify(data.data)
     } catch (err) {
       setError(errorMessage(err))
@@ -394,16 +391,6 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                         </option>
                       ))}
                     </Select>
-                  </Field>
-                </div>
-                <div className="flex-1">
-                  <Field label="Observação do status (opcional)">
-                    <input
-                      value={statusComment}
-                      onChange={(e) => setStatusComment(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                      placeholder="Ex: aguardando cliente aprovar orçamento..."
-                    />
                   </Field>
                 </div>
                 <button
