@@ -28,8 +28,10 @@ class ServiceOrder extends Model
         'discount',
         'total_amount',
         'entry_date',
+        'expected_delivery_at',
         'delivery_date',
         'notes',
+        'checklist',
     ];
 
     protected function casts(): array
@@ -40,7 +42,9 @@ class ServiceOrder extends Model
             'discount' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'entry_date' => 'date',
+            'expected_delivery_at' => 'datetime',
             'delivery_date' => 'date',
+            'checklist' => 'array',
         ];
     }
 

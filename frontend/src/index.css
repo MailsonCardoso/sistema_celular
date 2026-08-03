@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-os,
+  #print-os * {
+    visibility: visible;
+  }
+
+  #print-os {
+    display: block !important;
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    padding: 24px;
+  }
+}

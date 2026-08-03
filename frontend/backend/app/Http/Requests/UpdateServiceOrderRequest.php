@@ -33,7 +33,13 @@ class UpdateServiceOrderRequest extends FormRequest
             'technical_diagnosis' => ['nullable', 'string'],
             'service_cost' => ['nullable', 'numeric', 'min:0'],
             'discount' => ['nullable', 'numeric', 'min:0'],
+            'expected_delivery_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
+            'checklist' => ['nullable', 'array'],
+            'checklist.items' => ['array'],
+            'checklist.items.*' => ['string', 'max:50'],
+            'checklist.condition' => ['array'],
+            'checklist.condition.*' => ['string', 'max:50'],
         ];
     }
 }

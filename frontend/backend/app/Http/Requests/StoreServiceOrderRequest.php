@@ -35,7 +35,13 @@ class StoreServiceOrderRequest extends FormRequest
             'service_cost' => ['nullable', 'numeric', 'min:0'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'entry_date' => ['nullable', 'date'],
+            'expected_delivery_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
+            'checklist' => ['nullable', 'array'],
+            'checklist.items' => ['array'],
+            'checklist.items.*' => ['string', 'max:50'],
+            'checklist.condition' => ['array'],
+            'checklist.condition.*' => ['string', 'max:50'],
         ];
     }
 }

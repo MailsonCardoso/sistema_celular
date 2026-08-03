@@ -31,8 +31,10 @@ class ServiceOrderResource extends JsonResource
             'parts_total' => (float) $this->whenLoaded('items', fn () => $this->partsTotal(), 0),
             'total_amount' => (float) $this->total_amount,
             'entry_date' => $this->entry_date?->format('Y-m-d'),
+            'expected_delivery_at' => $this->expected_delivery_at?->format('Y-m-d H:i'),
             'delivery_date' => $this->delivery_date?->format('Y-m-d'),
             'notes' => $this->notes,
+            'checklist' => $this->checklist,
             'items' => ServiceOrderItemResource::collection($this->whenLoaded('items')),
             'history' => $this->when(
                 $this->historyVisibleFor($request),

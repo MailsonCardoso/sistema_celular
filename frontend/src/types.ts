@@ -112,6 +112,11 @@ export interface ServiceHistory {
   created_at: string
 }
 
+export interface ServiceOrderChecklist {
+  items: string[]
+  condition: string[]
+}
+
 export interface ServiceOrder {
   id: number
   client_id: number
@@ -131,8 +136,10 @@ export interface ServiceOrder {
   parts_total: number
   total_amount: number
   entry_date: string
+  expected_delivery_at: string | null
   delivery_date: string | null
   notes: string | null
+  checklist: ServiceOrderChecklist | null
   items: ServiceOrderItem[]
   history?: ServiceHistory[]
   created_at?: string

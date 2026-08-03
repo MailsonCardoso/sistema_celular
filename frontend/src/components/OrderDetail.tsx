@@ -30,7 +30,7 @@ const transitions: Record<ServiceOrderStatusValue, ServiceOrderStatusValue[]> = 
 }
 
 export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
-  const { user, limits } = useAuth()
+  const { user, limits, store } = useAuth()
   const [order, setOrder] = useState<ServiceOrder | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
@@ -209,7 +209,23 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
       ) : (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <StatusBadge status={order.status} label={order.status_label} />
+            <div className="flex items-center gap-3">
+              <StatusBadge status={order.status} label={order.status_label} />
+              <button
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+                Imprimir
+              </button>
+            </div>
             <div className="text-right">
               <p className="text-xs uppercase text-slate-400">Total da OS</p>
               <p className="text-xl font-bold text-slate-800">{currency(order.total_amount)}</p>
@@ -229,6 +245,11 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             <div className="rounded-lg bg-slate-50 p-3">
               <p className="text-xs uppercase text-slate-400">Entrada</p>
               <p className="mt-1 font-medium text-slate-700">{dateBR(order.entry_date)}</p>
+              {order.expected_delivery_at && (
+                <p className="text-xs text-slate-500">
+                  Previsão: {datetimeBR(order.expected_delivery_at.replace(' ', 'T'))}
+                </p>
+              )}
               {order.delivery_date && <p className="text-xs text-slate-500">Entrega: {dateBR(order.delivery_date)}</p>}
             </div>
           </div>
@@ -262,6 +283,31 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
               )}
             </div>
           </div>
+
+          {order.checklist &&
+            (order.checklist.items.length > 0 || order.checklist.condition.length > 0) && (
+              <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-sm">
+                <p className="text-xs uppercase text-slate-400">Checklist de entrada</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {order.checklist.items.map((item) => (
+                    <span
+                      key={item}
+                      className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                  {order.checklist.condition.map((item) => (
+                    <span
+                      key={item}
+                      className="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
           {error && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
@@ -440,6 +486,129 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
               </button>
             </form>
           )}
+        </div>
+      )}
+
+      {order && (
+        <div id="print-os" className="hidden bg-white text-slate-900 print:block">
+          <div className="mb-4 border-b-2 border-slate-900 pb-3 text-center">
+            <h1 className="text-2xl font-bold uppercase">{store?.store_name ?? 'OmniOS'}</h1>
+            {[store?.cnpj_cpf, store?.phone, store?.address].filter(Boolean).length > 0 && (
+              <p className="mt-1 text-xs">
+                {[store?.cnpj_cpf, store?.phone, store?.address].filter(Boolean).join(' · ')}
+              </p>
+            )}
+          </div>
+
+          <h2 className="mb-4 text-center text-lg font-bold">ORDEM DE SERVIÇO #{order.id}</h2>
+
+          <div className="mb-4 flex justify-between gap-6 text-sm">
+            <div className="space-y-1">
+              <p>
+                <strong>Cliente:</strong> {(order.client as Client | null)?.name ?? `#${order.client_id}`}
+                {(order.client as Client | null)?.phone ? ` (${(order.client as Client | null)?.phone})` : ''}
+              </p>
+              <p>
+                <strong>Aparelho:</strong> {order.device_brand} {order.device_model}
+                {order.device_imei ? ` · IMEI: ${order.device_imei}` : ''}
+              </p>
+              <p>
+                <strong>Defeito relatado:</strong> {order.reported_issue}
+              </p>
+              <p>
+                <strong>Diagnóstico técnico:</strong> {order.technical_diagnosis ?? '—'}
+              </p>
+            </div>
+            <div className="space-y-1 text-right">
+              <p>
+                <strong>Entrada:</strong> {dateBR(order.entry_date)}
+              </p>
+              {order.expected_delivery_at && (
+                <p>
+                  <strong>Previsão:</strong> {datetimeBR(order.expected_delivery_at.replace(' ', 'T'))}
+                </p>
+              )}
+              {order.delivery_date && (
+                <p>
+                  <strong>Entrega:</strong> {dateBR(order.delivery_date)}
+                </p>
+              )}
+              <p>
+                <strong>Técnico:</strong> {order.technician?.name ?? 'Não atribuído'}
+              </p>
+              <p>
+                <strong>Status:</strong> {order.status_label}
+              </p>
+            </div>
+          </div>
+
+          {order.checklist &&
+            (order.checklist.items.length > 0 || order.checklist.condition.length > 0) && (
+              <div className="mb-4 text-sm">
+                <p className="mb-1 font-semibold">Checklist de entrada</p>
+                <p className="text-slate-700">
+                  {order.checklist.items.length > 0 && <>Itens deixados: {order.checklist.items.join(', ')}</>}
+                  {order.checklist.items.length > 0 && order.checklist.condition.length > 0 && ' · '}
+                  {order.checklist.condition.length > 0 && <>Estado: {order.checklist.condition.join(', ')}</>}
+                </p>
+              </div>
+            )}
+
+          <table className="mb-4 w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-slate-900 text-left">
+                <th className="py-1.5">Peça</th>
+                <th className="py-1.5 text-center">Qtd</th>
+                <th className="py-1.5 text-right">Unit.</th>
+                <th className="py-1.5 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {order.items.map((item) => (
+                <tr key={item.id} className="border-b border-slate-300">
+                  <td className="py-1.5">{item.product_name ?? `#${item.product_id}`}</td>
+                  <td className="py-1.5 text-center">{item.quantity}</td>
+                  <td className="py-1.5 text-right">{currency(item.unit_price)}</td>
+                  <td className="py-1.5 text-right">{currency(item.subtotal)}</td>
+                </tr>
+              ))}
+              {order.items.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-1.5 text-slate-500">
+                    Nenhuma peça vinculada.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <div className="mb-8 flex justify-end text-sm">
+            <div className="space-y-1 text-right">
+              <p>
+                Mão de obra: <strong>{currency(order.service_cost)}</strong>
+              </p>
+              <p>
+                Peças: <strong>{currency(order.parts_total)}</strong>
+              </p>
+              {order.discount > 0 && (
+                <p>
+                  Desconto: <strong>−{currency(order.discount)}</strong>
+                </p>
+              )}
+              <p className="border-t border-slate-900 pt-1 text-base font-bold">
+                TOTAL: {currency(order.total_amount)}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 text-sm">
+            <div className="border-t border-slate-900 pt-1 text-center">
+              <span className="text-xs text-slate-600">Assinatura do cliente</span>
+            </div>
+            <div className="border-t border-slate-900 pt-1 text-center">
+              <span className="text-xs text-slate-600">Assinatura do técnico</span>
+            </div>
+          </div>
         </div>
       )}
     </Modal>
