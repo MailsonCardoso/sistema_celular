@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { api, errorMessage } from '../lib/api'
 import { currency, dateBR, datetimeBR } from '../lib/format'
 import Modal from './Modal'
@@ -27,6 +27,17 @@ const transitions: Record<ServiceOrderStatusValue, ServiceOrderStatusValue[]> = 
   completed: ['delivered'],
   delivered: [],
   cancelled: [],
+}
+
+function SectionTitle({ title, icon }: { title: string; icon: ReactNode }) {
+  return (
+    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+        {icon}
+      </span>
+      {title}
+    </h3>
+  )
 }
 
 export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
@@ -161,6 +172,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
       })
       setHistory(data.data.history ?? [])
       notify(data.data)
+      onClose()
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -233,29 +245,58 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-xs uppercase text-slate-400">Cliente</p>
-              <p className="mt-1 font-medium text-slate-700">{(order.client as Client | null)?.name ?? `#${order.client_id}`}</p>
-              <p className="text-xs text-slate-500">{(order.client as Client | null)?.phone ?? ''}</p>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-xs uppercase text-slate-400">Técnico</p>
-              <p className="mt-1 font-medium text-slate-700">{order.technician?.name ?? 'Não atribuído'}</p>
-            </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-xs uppercase text-slate-400">Entrada</p>
-              <p className="mt-1 font-medium text-slate-700">{dateBR(order.entry_date)}</p>
-              {order.expected_delivery_at && (
-                <p className="text-xs text-slate-500">
-                  Previsão: {datetimeBR(order.expected_delivery_at.replace(' ', 'T'))}
-                </p>
-              )}
-              {order.delivery_date && <p className="text-xs text-slate-500">Entrega: {dateBR(order.delivery_date)}</p>}
+          <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+            <SectionTitle
+              title="Cliente e responsável"
+              icon={
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              }
+            />
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <p className="text-xs uppercase text-slate-400">Cliente</p>
+                <p className="mt-1 font-medium text-slate-700">{(order.client as Client | null)?.name ?? `#${order.client_id}`}</p>
+                <p className="text-xs text-slate-500">{(order.client as Client | null)?.phone ?? ''}</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <p className="text-xs uppercase text-slate-400">Técnico</p>
+                <p className="mt-1 font-medium text-slate-700">{order.technician?.name ?? 'Não atribuído'}</p>
+              </div>
+              <div className="rounded-lg bg-white p-3 shadow-sm">
+                <p className="text-xs uppercase text-slate-400">Entrada</p>
+                <p className="mt-1 font-medium text-slate-700">{dateBR(order.entry_date)}</p>
+                {order.expected_delivery_at && (
+                  <p className="text-xs text-slate-500">
+                    Previsão: {datetimeBR(order.expected_delivery_at.replace(' ', 'T'))}
+                  </p>
+                )}
+                {order.delivery_date && <p className="text-xs text-slate-500">Entrega: {dateBR(order.delivery_date)}</p>}
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+          <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+            <SectionTitle
+              title="Problema e diagnóstico"
+              icon={
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"
+                  />
+                </svg>
+              }
+            />
+            <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
             <div>
               <p className="text-xs uppercase text-slate-400">Defeito relatado</p>
               <p className="mt-1 text-slate-700">{order.reported_issue}</p>
@@ -283,29 +324,60 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                 <p className="mt-1 text-slate-700">{order.technical_diagnosis ?? '—'}</p>
               )}
             </div>
+            </div>
           </div>
 
           {order.checklist &&
             (order.checklist.items.length > 0 || order.checklist.condition.length > 0) && (
-              <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-3 text-sm">
-                <p className="text-xs uppercase text-slate-400">Checklist de entrada</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {order.checklist.items.map((item) => (
-                    <span
-                      key={item}
-                      className="inline-flex rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                  {order.checklist.condition.map((item) => (
-                    <span
-                      key={item}
-                      className="inline-flex rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700"
-                    >
-                      {item}
-                    </span>
-                  ))}
+              <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4 text-sm">
+                <SectionTitle
+                  title="Checklist de entrada"
+                  icon={
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                      />
+                    </svg>
+                  }
+                />
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  {order.checklist.items.length > 0 && (
+                    <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-3">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-blue-700">
+                        Itens deixados pelo cliente
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {order.checklist.items.map((item) => (
+                          <span
+                            key={item}
+                            className="inline-flex rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {order.checklist.condition.length > 0 && (
+                    <div className="rounded-lg border border-amber-100 bg-amber-50/40 p-3">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                        Estado físico do aparelho
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {order.checklist.condition.map((item) => (
+                          <span
+                            key={item}
+                            className="inline-flex rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-amber-700"
+                          >
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -314,8 +386,20 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
           )}
 
-          <div>
-            <h3 className="mb-3 text-sm font-semibold text-slate-700">Peças utilizadas</h3>
+          <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+            <SectionTitle
+              title="Peças utilizadas"
+              icon={
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              }
+            />
             <div className="overflow-x-auto rounded-lg border border-slate-200">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-400">
@@ -426,8 +510,20 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           </div>
 
           {canChangeStatus && (
-            <div className="rounded-lg border border-slate-200 p-4">
-              <h3 className="mb-3 text-sm font-semibold text-slate-700">Mudar status</h3>
+            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+              <SectionTitle
+                title="Mudar status"
+                icon={
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                }
+              />
               <div className="flex flex-wrap items-end gap-3">
                 <div className="min-w-48">
                   <Field label="Novo status">
@@ -452,8 +548,20 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           )}
 
           {limits?.can_see_history && (
-            <div>
-              <h3 className="mb-3 text-sm font-semibold text-slate-700">Histórico de acompanhamento</h3>
+            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+              <SectionTitle
+                title="Histórico de acompanhamento"
+                icon={
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                }
+              />
               <div className="space-y-0">
                 {history.map((h, i) => (
                   <div key={h.id} className="relative border-l-2 border-slate-200 pb-4 pl-4 last:pb-0">
@@ -471,21 +579,36 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           )}
 
           {editable && (
-            <form onSubmit={addComment} className="flex gap-3">
-              <input
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                placeholder="Adicionar comentário à OS..."
+            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+              <SectionTitle
+                title="Comentários"
+                icon={
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
+                }
               />
-              <button
-                type="submit"
-                disabled={busy || !comment.trim()}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-              >
-                Comentar
-              </button>
-            </form>
+              <form onSubmit={addComment} className="flex gap-3">
+                <input
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  placeholder="Adicionar comentário à OS..."
+                />
+                <button
+                  type="submit"
+                  disabled={busy || !comment.trim()}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                >
+                  Comentar
+                </button>
+              </form>
+            </div>
           )}
         </div>
       )}
