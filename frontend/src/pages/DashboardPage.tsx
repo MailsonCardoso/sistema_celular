@@ -84,18 +84,18 @@ export default function DashboardPage() {
   const showCards = user?.role === 'admin' || user?.role === 'super_admin'
 
   const cards = [
-    { label: 'OS em aberto', value: data.open_orders, icon: icons.clipboard, gradient: 'blue' },
-    { label: 'Concluídas no mês', value: data.completed_this_month, icon: icons.check, gradient: 'emerald' },
-    { label: 'Clientes ativos', value: data.active_clients, icon: icons.users, gradient: 'violet' },
     ...(data.is_trial
       ? []
       : [
           { label: 'Receita do mês', value: currency(data.monthly_income ?? 0), icon: icons.income, gradient: 'green' },
-          { label: 'Despesas do mês', value: currency(data.monthly_expense ?? 0), icon: icons.expense, gradient: 'rose' },
-          { label: 'A receber', value: currency(data.pending_receivables ?? 0), icon: icons.pending, gradient: 'amber' },
           { label: 'Saldo do mês', value: currency(data.monthly_balance ?? 0), icon: icons.balance, gradient: 'slate' },
-          { label: 'Estoque baixo', value: data.low_stock_count ?? 0, icon: icons.stock, gradient: 'orange' },
+          { label: 'A receber', value: currency(data.pending_receivables ?? 0), icon: icons.pending, gradient: 'amber' },
+          { label: 'Despesas do mês', value: currency(data.monthly_expense ?? 0), icon: icons.expense, gradient: 'rose' },
         ]),
+    { label: 'OS em aberto', value: data.open_orders, icon: icons.clipboard, gradient: 'blue' },
+    { label: 'Concluídas no mês', value: data.completed_this_month, icon: icons.check, gradient: 'emerald' },
+    { label: 'Clientes ativos', value: data.active_clients, icon: icons.users, gradient: 'violet' },
+    ...(data.is_trial ? [] : [{ label: 'Estoque baixo', value: data.low_stock_count ?? 0, icon: icons.stock, gradient: 'orange' }]),
   ]
 
   const statusOrder: [string, string, string][] = [
