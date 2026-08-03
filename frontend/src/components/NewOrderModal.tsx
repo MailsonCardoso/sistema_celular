@@ -53,8 +53,10 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
   useEffect(() => {
     if (!open) return
     api
-      .get<{ data: User[] }>('/users', { params: { role: 'tecnico' } })
-      .then(({ data }) => setTechnicians(data.data))
+      .get<{ data: User[] }>('/users')
+      .then(({ data }) =>
+        setTechnicians(data.data.filter((u) => u.role === 'tecnico' || u.role === 'admin')),
+      )
       .catch(() => {})
   }, [open])
 
