@@ -25,7 +25,13 @@ class UserController extends Controller
             ->orderBy('name');
 
         if ($request->filled('role')) {
-            $query->where('role', $request->string('role'));
+            $role = $request->string('role');
+
+            if ($role === UserRole::Tecnico->value) {
+                $query->whereIn('role', [UserRole::Tecnico, UserRole::Admin]);
+            } else {
+                $query->where('role', $role);
+            }
         }
 
         if ($request->filled('search')) {

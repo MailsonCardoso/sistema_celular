@@ -110,6 +110,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
               {technicians.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
+                  {t.role === 'admin' ? ' (Administrador)' : ''}
                 </option>
               ))}
             </Select>
