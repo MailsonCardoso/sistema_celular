@@ -35,7 +35,6 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
   const [quantity, setQuantity] = useState('1')
-  const [unitPrice, setUnitPrice] = useState('')
   const [comment, setComment] = useState('')
   const [newStatus, setNewStatus] = useState<ServiceOrderStatusValue>('opened')
   const [error, setError] = useState('')
@@ -108,12 +107,10 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
       const { data } = await api.post<{ data: ServiceOrder['items'][number] }>(`/service-orders/${orderId}/items`, {
         product_id: Number(productId),
         quantity: Number(quantity),
-        unit_price: unitPrice ? Number(unitPrice) : undefined,
       })
       void data
       setProductId('')
       setQuantity('1')
-      setUnitPrice('')
       await reload()
     } catch (err) {
       setError(errorMessage(err))
@@ -268,7 +265,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             </div>
 
             {editable && (
-              <form onSubmit={addItem} className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <form onSubmit={addItem} className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <Field label="Peça">
                   <Select value={productId} onChange={(e) => setProductId(e.target.value)}>
                     <option value="">Selecione...</option>
@@ -287,17 +284,6 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                       </option>
                     ))}
                   </Select>
-                </Field>
-                <Field label="Preço (R$)">
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={unitPrice}
-                    onChange={(e) => setUnitPrice(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    placeholder="Preço de venda"
-                  />
                 </Field>
                 <div className="flex items-end">
                   <button
