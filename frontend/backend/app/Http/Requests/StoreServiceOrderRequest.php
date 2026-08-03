@@ -23,7 +23,7 @@ class StoreServiceOrderRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('users', 'id')
-                    ->where('role', UserRole::Tecnico->value)
+                    ->whereIn('role', [UserRole::Tecnico->value, UserRole::Admin->value])
                     ->where('store_id', $storeId),
             ],
             'device_brand' => ['required', 'string', 'max:100'],
