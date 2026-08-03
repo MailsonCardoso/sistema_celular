@@ -35,7 +35,9 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
   const [quantity, setQuantity] = useState('1')
+  const [statusComment, setStatusComment] = useState('')
   const [comment, setComment] = useState('')
+  const [diagnosis, setDiagnosis] = useState('')
   const [newStatus, setNewStatus] = useState<ServiceOrderStatusValue>('opened')
   const [error, setError] = useState('')
   const [loadError, setLoadError] = useState('')
@@ -47,6 +49,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
     try {
       const { data } = await api.get<{ data: ServiceOrder }>(`/service-orders/${id}`)
       setOrder(data.data)
+      setDiagnosis(data.data.technical_diagnosis ?? '')
       setHistory(data.data.history ?? [])
     } catch (err) {
       setOrder(null)
@@ -87,9 +90,9 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
     try {
       const { data } = await api.patch<{ data: ServiceOrder }>(`/service-orders/${orderId}/status`, {
         status,
-        comment: comment.trim() || null,
+        comment: statusComment.trim() || null,
       })
-      setComment('')
+      setStatusComment('')
       notify(data.data)
     } catch (err) {
       setError(errorMessage(err))
@@ -141,6 +144,23 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
       await api.post(`/service-orders/${orderId}/comments`, { comment: comment.trim() })
       setComment('')
       await reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const saveDiagnosis = async () => {
+    if (!order) return
+    setBusy(true)
+    setError('')
+    try {
+      const { data } = await api.patch<{ data: ServiceOrder }>(`/service-orders/${orderId}`, {
+        technical_diagnosis: diagnosis.trim() || null,
+      })
+      setHistory(data.data.history ?? [])
+      notify(data.data)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -203,7 +223,26 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             </div>
             <div>
               <p className="text-xs uppercase text-slate-400">Diagnóstico técnico</p>
-              <p className="mt-1 text-slate-700">{order.technical_diagnosis ?? '—'}</p>
+              {editable ? (
+                <div className="mt-1 flex gap-2">
+                  <textarea
+                    value={diagnosis}
+                    onChange={(e) => setDiagnosis(e.target.value)}
+                    rows={2}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="Descreva o diagnóstico técnico..."
+                  />
+                  <button
+                    onClick={() => void saveDiagnosis()}
+                    disabled={busy || diagnosis === (order.technical_diagnosis ?? '')}
+                    className="shrink-0 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-50"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-1 text-slate-700">{order.technical_diagnosis ?? '—'}</p>
+              )}
             </div>
           </div>
 
@@ -316,8 +355,8 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                 <div className="flex-1">
                   <Field label="Observação do status (opcional)">
                     <input
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
+                      value={statusComment}
+                      onChange={(e) => setStatusComment(e.target.value)}
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                       placeholder="Ex: aguardando cliente aprovar orçamento..."
                     />
