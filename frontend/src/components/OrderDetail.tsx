@@ -38,6 +38,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   const [statusComment, setStatusComment] = useState('')
   const [comment, setComment] = useState('')
   const [diagnosis, setDiagnosis] = useState('')
+  const [discount, setDiscount] = useState('')
   const [newStatus, setNewStatus] = useState<ServiceOrderStatusValue>('opened')
   const [error, setError] = useState('')
   const [loadError, setLoadError] = useState('')
@@ -50,6 +51,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
       const { data } = await api.get<{ data: ServiceOrder }>(`/service-orders/${id}`)
       setOrder(data.data)
       setDiagnosis(data.data.technical_diagnosis ?? '')
+      setDiscount(data.data.discount > 0 ? String(data.data.discount) : '')
       setHistory(data.data.history ?? [])
     } catch (err) {
       setOrder(null)
@@ -161,6 +163,24 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
       })
       setHistory(data.data.history ?? [])
       notify(data.data)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const saveDiscount = async () => {
+    if (!order) return
+    setBusy(true)
+    setError('')
+    try {
+      const { data } = await api.patch<{ data: ServiceOrder }>(`/service-orders/${orderId}`, {
+        discount: Number(discount) || 0,
+      })
+      setHistory(data.data.history ?? [])
+      notify(data.data)
+      setDiscount(data.data.discount > 0 ? String(data.data.discount) : '')
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -295,6 +315,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                   <tr>
                     <td colSpan={3} className="px-4 py-2 text-right text-xs text-slate-500">
                       Mão de obra: {currency(order.service_cost)} · Peças: {currency(order.parts_total)}
+                      {order.discount > 0 && <> · Desconto: −{currency(order.discount)}</>}
                     </td>
                     <td className="px-4 py-2 text-right font-bold text-slate-800">{currency(order.total_amount)}</td>
                     <td />
@@ -302,6 +323,29 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                 </tfoot>
               </table>
             </div>
+
+            {editable && (
+              <div className="mt-3 flex items-end gap-3">
+                <Field label="Desconto (R$)">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={discount}
+                    onChange={(e) => setDiscount(e.target.value)}
+                    className="w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    placeholder="0,00"
+                  />
+                </Field>
+                <button
+                  onClick={() => void saveDiscount()}
+                  disabled={busy || Number(discount) === order.discount}
+                  className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:opacity-50"
+                >
+                  Aplicar
+                </button>
+              </div>
+            )}
 
             {editable && (
               <form onSubmit={addItem} className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">

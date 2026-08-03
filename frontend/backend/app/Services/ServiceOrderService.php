@@ -45,6 +45,7 @@ class ServiceOrderService
 
         $order = DB::transaction(function () use ($data, $actor) {
             $order = ServiceOrder::create($data);
+            $this->assertDiscountValid($order);
             $order->recalculateTotal();
 
             $this->recordHistory(
@@ -76,6 +77,8 @@ class ServiceOrderService
             $oldServiceCost = (float) $order->service_cost;
 
             $order->fill($data);
+
+            $this->assertDiscountValid($order);
 
             if (isset($data['service_cost']) && (float) $data['service_cost'] !== $oldServiceCost) {
                 $this->recordHistory(
@@ -151,6 +154,8 @@ class ServiceOrderService
                 "{$product->name} x{$quantity}",
             );
 
+            $this->assertDiscountValid($order);
+
             $order->recalculateTotal();
 
             if ($order->status === ServiceOrderStatus::Completed) {
@@ -183,6 +188,8 @@ class ServiceOrderService
                 "{$productName} x{$item->quantity}",
                 null,
             );
+
+            $this->assertDiscountValid($order);
 
             $order->recalculateTotal();
 
@@ -297,6 +304,18 @@ class ServiceOrderService
             $label = strtolower($order->status->label());
 
             throw new RuntimeException("Não é possível alterar uma OS {$label}.");
+        }
+    }
+
+    /**
+     * Impede que o desconto ultrapasse o valor da OS (mão de obra + peças).
+     */
+    private function assertDiscountValid(ServiceOrder $order): void
+    {
+        $base = (float) $order->service_cost + $order->partsTotal();
+
+        if ((float) ($order->discount ?? 0) > $base) {
+            throw new RuntimeException('O desconto não pode ser maior que o total da OS.');
         }
     }
 }

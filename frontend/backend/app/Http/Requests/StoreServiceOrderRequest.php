@@ -33,6 +33,7 @@ class StoreServiceOrderRequest extends FormRequest
             'reported_issue' => ['required', 'string'],
             'technical_diagnosis' => ['nullable', 'string'],
             'service_cost' => ['nullable', 'numeric', 'min:0'],
+            'discount' => ['nullable', 'numeric', 'min:0'],
             'entry_date' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
         ];

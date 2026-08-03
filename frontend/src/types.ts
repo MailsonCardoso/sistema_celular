@@ -127,6 +127,7 @@ export interface ServiceOrder {
   status: ServiceOrderStatusValue
   status_label: string
   service_cost: number
+  discount: number
   parts_total: number
   total_amount: number
   entry_date: string

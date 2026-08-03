@@ -19,6 +19,7 @@ interface OrderForm {
   device_password: string
   reported_issue: string
   service_cost: string
+  discount: string
   notes: string
 }
 
@@ -31,6 +32,7 @@ const emptyForm: OrderForm = {
   device_password: '',
   reported_issue: '',
   service_cost: '',
+  discount: '',
   notes: '',
 }
 
@@ -73,6 +75,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
         device_password: form.device_password || null,
         reported_issue: form.reported_issue,
         service_cost: form.service_cost ? Number(form.service_cost) : 0,
+        discount: form.discount ? Number(form.discount) : 0,
         notes: form.notes || null,
       }
       const { data } = await api.post<{ data: ServiceOrder }>('/service-orders', payload)
@@ -176,14 +179,25 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
               placeholder="0,00"
             />
           </Field>
-          <Field label="Observações">
+          <Field label="Desconto (R$)">
             <Input
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              placeholder="Opcional"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.discount}
+              onChange={(e) => setForm({ ...form, discount: e.target.value })}
+              placeholder="0,00"
             />
           </Field>
         </div>
+
+        <Field label="Observações">
+          <Input
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            placeholder="Opcional"
+          />
+        </Field>
 
         {(error || serverErrors.client_id || serverErrors.reported_issue) && (
           <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">

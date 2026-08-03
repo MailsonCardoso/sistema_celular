@@ -25,6 +25,7 @@ class ServiceOrder extends Model
         'technical_diagnosis',
         'status',
         'service_cost',
+        'discount',
         'total_amount',
         'entry_date',
         'delivery_date',
@@ -36,6 +37,7 @@ class ServiceOrder extends Model
         return [
             'status' => ServiceOrderStatus::class,
             'service_cost' => 'decimal:2',
+            'discount' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'entry_date' => 'date',
             'delivery_date' => 'date',
@@ -71,11 +73,12 @@ class ServiceOrder extends Model
     }
 
     /**
-     * Recalcula e persiste o total da OS (mão de obra + peças).
+     * Recalcula e persiste o total da OS (mão de obra + peças − desconto).
      */
     public function recalculateTotal(): void
     {
-        $this->total_amount = (float) $this->service_cost + $this->partsTotal();
+        $base = (float) $this->service_cost + $this->partsTotal();
+        $this->total_amount = max(0.0, $base - (float) ($this->discount ?? 0));
         $this->saveQuietly();
     }
 }

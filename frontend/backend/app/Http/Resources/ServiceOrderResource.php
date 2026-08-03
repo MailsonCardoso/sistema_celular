@@ -27,6 +27,7 @@ class ServiceOrderResource extends JsonResource
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
             'service_cost' => (float) $this->service_cost,
+            'discount' => (float) $this->discount,
             'parts_total' => (float) $this->whenLoaded('items', fn () => $this->partsTotal(), 0),
             'total_amount' => (float) $this->total_amount,
             'entry_date' => $this->entry_date?->format('Y-m-d'),

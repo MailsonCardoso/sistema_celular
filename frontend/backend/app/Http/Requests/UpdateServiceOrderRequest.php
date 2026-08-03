@@ -32,6 +32,7 @@ class UpdateServiceOrderRequest extends FormRequest
             'reported_issue' => ['sometimes', 'required', 'string'],
             'technical_diagnosis' => ['nullable', 'string'],
             'service_cost' => ['nullable', 'numeric', 'min:0'],
+            'discount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
         ];
     }
