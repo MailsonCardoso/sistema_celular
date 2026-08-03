@@ -137,11 +137,15 @@ class ServiceOrderController extends Controller
     /**
      * Atualiza os dados da OS (diagnóstico, custo, técnico, etc.).
      */
-    public function update(UpdateServiceOrderRequest $request, ServiceOrder $serviceOrder): ServiceOrderResource
+    public function update(UpdateServiceOrderRequest $request, ServiceOrder $serviceOrder): ServiceOrderResource|JsonResponse
     {
         $this->authorizeAccess($serviceOrder, $request->user());
 
-        $order = $this->service->update($serviceOrder, $request->validated(), $request->user());
+        try {
+            $order = $this->service->update($serviceOrder, $request->validated(), $request->user());
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         $order->load('client', 'technician', 'items.product', 'history.user');
 
