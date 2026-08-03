@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { Printer, User, Wrench, ClipboardList, Cog, RefreshCw, History, MessageSquare, Smartphone } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { currency, dateBR, datetimeBR } from '../lib/format'
 import Modal from './Modal'
@@ -202,7 +203,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
   const canChangeStatus = !!user && ['admin', 'tecnico', 'atendente'].includes(user.role) && editable
 
   return (
-    <Modal title={order ? `OS #${order.id} - ${order.device_brand} ${order.device_model}` : 'Carregando...'} open={!!orderId} onClose={onClose} wide>
+    <Modal title={order ? `OS #${order.id} - ${order.device_brand} ${order.device_model}` : 'Carregando...'} open={!!orderId} onClose={onClose} wide icon={<Smartphone className="h-4 w-4" />}>
       {!order ? (
         loadError ? (
           <div className="flex flex-col items-center gap-3 py-10">
@@ -228,14 +229,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
                 onClick={() => window.print()}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700"
               >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                  />
-                </svg>
+                <Printer className="h-3.5 w-3.5" />
                 Imprimir
               </button>
             </div>
@@ -248,16 +242,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
             <SectionTitle
               title="Cliente e responsável"
-              icon={
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              }
+              icon={<User className="h-3.5 w-3.5" />}
             />
             <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
               <div className="rounded-lg bg-white p-3 shadow-sm">
@@ -285,16 +270,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
             <SectionTitle
               title="Problema e diagnóstico"
-              icon={
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 004.486-6.336l-3.276 3.277a3.004 3.004 0 01-2.25-2.25l3.276-3.276a4.5 4.5 0 00-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437l1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008z"
-                  />
-                </svg>
-              }
+              icon={<Wrench className="h-3.5 w-3.5" />}
             />
             <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
             <div>
@@ -332,16 +308,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
               <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4 text-sm">
                 <SectionTitle
                   title="Checklist de entrada"
-                  icon={
-                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                      />
-                    </svg>
-                  }
+                  icon={<ClipboardList className="h-3.5 w-3.5" />}
                 />
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                   {order.checklist.items.length > 0 && (
@@ -389,16 +356,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
             <SectionTitle
               title="Peças utilizadas"
-              icon={
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              }
+              icon={<Cog className="h-3.5 w-3.5" />}
             />
             <div className="overflow-x-auto rounded-lg border border-slate-200">
               <table className="w-full text-left text-sm">
@@ -513,16 +471,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
               <SectionTitle
                 title="Mudar status"
-                icon={
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                }
+                icon={<RefreshCw className="h-3.5 w-3.5" />}
               />
               <div className="flex flex-wrap items-end gap-3">
                 <div className="min-w-48">
@@ -551,16 +500,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
               <SectionTitle
                 title="Histórico de acompanhamento"
-                icon={
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                }
+                icon={<History className="h-3.5 w-3.5" />}
               />
               <div className="space-y-0">
                 {history.map((h, i) => (
@@ -582,16 +522,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
               <SectionTitle
                 title="Comentários"
-                icon={
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                    />
-                  </svg>
-                }
+                icon={<MessageSquare className="h-3.5 w-3.5" />}
               />
               <form onSubmit={addComment} className="flex gap-3">
                 <input

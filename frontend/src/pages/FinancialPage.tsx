@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ShoppingBag, History, ArrowUpRight, ArrowDownLeft, Layers, Clock, RefreshCw, Search, ArrowUp, ArrowDown, CircleCheck, Trash2, CircleDollarSign } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { currency, dateBR } from '../lib/format'
 import { Field, Input, Select, useFormErrors } from '../components/form'
@@ -271,14 +272,7 @@ export default function FinancialPage() {
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
           >
             <span className="inline-flex items-center gap-1.5">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 12h4m-2 2l-2-2 2-2zm7-6h.01M3 8h18v10a2 2 0 002 2h3m-3-5a2 2 0 11-4 0 2 2 0 014 0zm-5 0a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
+              <ShoppingBag className="h-4 w-4" />
               Vender acessório
             </span>
           </button>
@@ -297,73 +291,39 @@ export default function FinancialPage() {
             label="Saldo anterior"
             value={currency(summary.previous_balance)}
             hint="Pagas antes do período"
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
+            icon={<History className="h-5 w-5" />}
             gradient="violet"
           />
           <StatCard
             label="Entradas"
             value={currency(summary.income)}
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                />
-              </svg>
-            }
+            icon={<ArrowUpRight className="h-5 w-5" />}
             gradient="green"
           />
           <StatCard
             label="Saídas"
             value={currency(summary.expense)}
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"
-                />
-              </svg>
-            }
+            icon={<ArrowDownLeft className="h-5 w-5" />}
             gradient="rose"
           />
           <StatCard
             label="Saldo do período"
             value={currency(summary.balance)}
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l9 5 9-5-9-5-9 5zm0 6l9 5 9-5M3 18l9 5 9-5" />
-              </svg>
-            }
+            icon={<Layers className="h-5 w-5" />}
             gradient="slate"
           />
           <StatCard
             label="A receber"
             value={currency(pendingTotal)}
             hint={pendingTotal > 0 ? 'Lançamentos pendentes' : 'Nenhum pendente'}
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
+            icon={<Clock className="h-5 w-5" />}
             gradient="amber"
           />
           <StatCard
             label="Saldo acumulado"
             value={currency(summary.accrued_balance)}
             hint="Saldo anterior + período"
-            icon={
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            }
+            icon={<RefreshCw className="h-5 w-5" />}
             gradient="blue"
           />
         </div>
@@ -372,9 +332,7 @@ export default function FinancialPage() {
       <div className="mb-4 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200/60 bg-white p-3 shadow-sm">
         <div className="relative">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Search className="h-4 w-4" />
           </span>
           <input
             value={search}
@@ -451,13 +409,11 @@ export default function FinancialPage() {
                           : 'bg-rose-50 text-rose-600'
                       }`}
                     >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        {tx.type === 'income' ? (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                        ) : (
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                        )}
-                      </svg>
+                      {tx.type === 'income' ? (
+                        <ArrowUp className="h-4 w-4" />
+                      ) : (
+                        <ArrowDown className="h-4 w-4" />
+                      )}
                     </div>
                     <div>
                       <p className="font-medium text-slate-800">{tx.description}</p>
@@ -537,9 +493,7 @@ export default function FinancialPage() {
                         title="Marcar como recebido"
                         className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600"
                       >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                        <CircleCheck className="h-4 w-4" />
                       </button>
                     )}
                     <button
@@ -547,9 +501,7 @@ export default function FinancialPage() {
                       title="Excluir"
                       className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
                     >
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 </td>
@@ -576,7 +528,7 @@ export default function FinancialPage() {
         )}
       </div>
 
-      <Modal title="Novo Lançamento" open={modalOpen} onClose={() => setModalOpen(false)}>
+      <Modal title="Novo Lançamento" open={modalOpen} onClose={() => setModalOpen(false)} icon={<CircleDollarSign className="h-4 w-4" />}>
         <form onSubmit={save} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Tipo" required>
@@ -700,7 +652,7 @@ export default function FinancialPage() {
         </form>
       </Modal>
 
-      <Modal title="Vender acessório" open={saleOpen} onClose={() => setSaleOpen(false)} wide>
+      <Modal title="Vender acessório" open={saleOpen} onClose={() => setSaleOpen(false)} wide icon={<ShoppingBag className="h-4 w-4" />}>
         <form onSubmit={saveSale} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Produto (acessório)" required>
             <Select

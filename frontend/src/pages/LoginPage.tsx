@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { Smartphone, Check, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { errorMessage } from '../lib/api'
 
@@ -43,14 +44,7 @@ export default function LoginPage() {
 
         <div className="relative flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-white ring-1 ring-white/20">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-              />
-            </svg>
+            <Smartphone className="h-6 w-6" />
           </div>
           <div>
             <p className="text-lg font-bold text-white">OmniOS</p>
@@ -66,9 +60,7 @@ export default function LoginPage() {
             {features.map((feature) => (
               <li key={feature} className="flex items-center gap-3 text-sm text-slate-300">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40">
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
+                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
                 </span>
                 {feature}
               </li>
@@ -85,14 +77,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="mb-8 flex flex-col items-center lg:hidden">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 text-white">
-              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              </svg>
+              <Smartphone className="h-7 w-7" />
             </div>
             <h1 className="text-2xl font-bold text-white">OmniOS</h1>
             <p className="mt-1 text-sm text-slate-400">Assistência Técnica - Acesso da equipe</p>
@@ -162,9 +147,7 @@ export default function LoginPage() {
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-bold text-emerald-950 transition hover:bg-emerald-400"
             >
               Criar minha loja
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+              <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
             </button>
           </div>
         </div>

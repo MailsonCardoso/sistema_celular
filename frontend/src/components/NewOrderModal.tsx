@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { User as UserIcon, Smartphone, ClipboardList, Package, CircleDollarSign } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { Field, Input, Select, Textarea, useFormErrors } from './form'
 import Modal from './Modal'
@@ -163,22 +164,13 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
   })
 
   return (
-    <Modal title="Nova Ordem de Serviço" open={open} onClose={onClose} wide>
+    <Modal title="Nova Ordem de Serviço" open={open} onClose={onClose} wide icon={<ClipboardList className="h-4 w-4" />}>
       <form onSubmit={save} className="space-y-4">
         <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
           <SectionTitle
             number={1}
             title="Cliente e Responsável"
-            icon={
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            }
+            icon={<UserIcon className="h-3.5 w-3.5" />}
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Cliente" required>
@@ -216,16 +208,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           <SectionTitle
             number={2}
             title="Dados do Dispositivo"
-            icon={
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                />
-              </svg>
-            }
+            icon={<Smartphone className="h-3.5 w-3.5" />}
           />
           <div className="grid grid-cols-2 gap-4">
             <Field label="Marca do aparelho" required>
@@ -265,16 +248,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           <SectionTitle
             number={3}
             title="Problema e Checklist"
-            icon={
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                />
-              </svg>
-            }
+            icon={<ClipboardList className="h-3.5 w-3.5" />}
           />
           <Field label="Defeito relatado" required>
             <Textarea
@@ -288,14 +262,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-3">
               <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-blue-700">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
+                <Package className="h-3.5 w-3.5" />
                 Itens deixados pelo cliente
               </p>
               <div className="flex flex-wrap gap-2">
@@ -311,14 +278,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
             </div>
             <div className="rounded-lg border border-amber-100 bg-amber-50/40 p-3">
               <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                  />
-                </svg>
+                <Smartphone className="h-3.5 w-3.5" />
                 Estado físico do aparelho
               </p>
               <div className="flex flex-wrap gap-2">
@@ -339,16 +299,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           <SectionTitle
             number={4}
             title="Financeiro e Prazos"
-            icon={
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
+            icon={<CircleDollarSign className="h-3.5 w-3.5" />}
           />
           <div className="grid grid-cols-2 gap-4">
             <Field label="Valor da mão de obra (R$)">
