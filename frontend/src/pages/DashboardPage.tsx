@@ -97,11 +97,11 @@ export default function DashboardPage() {
     ...(data.is_trial
       ? []
       : [
+          { label: 'Saldo anterior', value: currency(data.previous_balance ?? 0), icon: icons.previous, gradient: 'violet' },
           { label: 'Receita do mês', value: currency(data.monthly_income ?? 0), icon: icons.income, gradient: 'green' },
           { label: 'Saldo do mês', value: currency(data.monthly_balance ?? 0), icon: icons.balance, gradient: 'slate' },
           { label: 'A receber', value: currency(data.pending_receivables ?? 0), icon: icons.pending, gradient: 'amber' },
           { label: 'Despesas do mês', value: currency(data.monthly_expense ?? 0), icon: icons.expense, gradient: 'rose' },
-          { label: 'Saldo anterior', value: currency(data.previous_balance ?? 0), icon: icons.previous, gradient: 'violet' },
           { label: 'Saldo acumulado', value: currency(data.accrued_balance ?? 0), icon: icons.accrued, gradient: 'blue' },
         ]),
     { label: 'OS em aberto', value: data.open_orders, icon: icons.clipboard, gradient: 'blue' },
