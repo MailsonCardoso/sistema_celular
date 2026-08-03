@@ -4,6 +4,7 @@ import { currency, dateBR } from '../lib/format'
 import { Field, Input, Select, useFormErrors } from '../components/form'
 import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
+import SimplePaginator from '../components/SimplePaginator'
 import StatCard from '../components/StatCard'
 import type { Client, FinancialTransaction, Product } from '../types'
 
@@ -37,12 +38,17 @@ export default function FinancialPage() {
   const [status, setStatus] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [meta, setMeta] = useState<{ current_page: number; last_page: number; total: number; per_page: number } | null>(
+    null,
+  )
+  const [page, setPage] = useState(1)
   const [summary, setSummary] = useState<{
     income: number
     expense: number
     balance: number
     previous_balance: number
     accrued_balance: number
+    pending_receivables: number
   } | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<TxForm>(emptyForm)
@@ -65,13 +71,21 @@ export default function FinancialPage() {
   const { serverErrors, setServerErrors, handleSubmit } = useFormErrors()
 
   const load = useCallback(async () => {
-    const params: Record<string, string> = {}
+    const params: Record<string, string | number> = { per_page: 10, page }
     if (type) params.type = type
     if (status) params.status = status
     if (dateFrom) params.date_from = dateFrom
     if (dateTo) params.date_to = dateTo
-    const { data } = await api.get<{ data: FinancialTransaction[] }>('/financial-transactions', { params })
+    if (search.trim()) params.search = search.trim()
+    const { data } = await api.get<{
+      data: FinancialTransaction[]
+      meta: { current_page: number; last_page: number; total: number; per_page: number }
+    }>(
+      '/financial-transactions',
+      { params },
+    )
     setTransactions(data.data)
+    setMeta(data.meta)
 
     const reportParams: Record<string, string> = {}
     if (dateFrom) reportParams.date_from = dateFrom
@@ -82,34 +96,26 @@ export default function FinancialPage() {
       balance: number
       previous_balance: number
       accrued_balance: number
+      pending_receivables: number
     }>('/financial/report', {
       params: reportParams,
     })
     setSummary(report.data)
-  }, [type, status, dateFrom, dateTo])
+  }, [type, status, dateFrom, dateTo, page, search])
 
   useEffect(() => {
-    void load()
+    const t = setTimeout(() => void load(), 300)
+    return () => clearTimeout(t)
   }, [load])
 
-  const pendingTotal = useMemo(
-    () =>
-      transactions
-        .filter((tx) => tx.type === 'income' && tx.status === 'pending')
-        .reduce((acc, tx) => acc + tx.amount, 0),
-    [transactions],
-  )
+  // volta para a primeira página ao trocar filtros
+  useEffect(() => {
+    const reset = () => setPage(1)
+    reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, status, dateFrom, dateTo])
 
-  const visible = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return transactions
-    return transactions.filter(
-      (tx) =>
-        tx.description.toLowerCase().includes(term) ||
-        (tx.client?.name ?? '').toLowerCase().includes(term) ||
-        (tx.category_label ?? '').toLowerCase().includes(term),
-    )
-  }, [transactions, search])
+  const pendingTotal = summary?.pending_receivables ?? 0
 
   const monthOptions = useMemo(() => {
     const names = [
@@ -127,14 +133,11 @@ export default function FinancialPage() {
       'Dezembro',
     ]
     const options: { value: string; label: string }[] = []
-    const now = new Date()
-    for (let i = 0; i < 24; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      options.push({
-        value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
-        label: `${names[d.getMonth()]}/${d.getFullYear()}`,
-      })
+    // todos os meses de 2026 + janeiro de 2027
+    for (let m = 1; m <= 12; m++) {
+      options.push({ value: `2026-${String(m).padStart(2, '0')}`, label: `${names[m - 1]}/2026` })
     }
+    options.push({ value: '2027-01', label: `${names[0]}/2027` })
     return options
   }, [])
 
@@ -420,24 +423,6 @@ export default function FinancialPage() {
             ))}
           </select>
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-600">De</label>
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-600">Até</label>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
-        </div>
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
@@ -455,7 +440,7 @@ export default function FinancialPage() {
             </tr>
           </thead>
           <tbody>
-            {visible.map((tx) => (
+            {transactions.map((tx) => (
               <tr key={tx.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
@@ -570,7 +555,7 @@ export default function FinancialPage() {
                 </td>
               </tr>
             ))}
-            {visible.length === 0 && (
+            {transactions.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
                   Nenhuma transação encontrada.
@@ -579,6 +564,16 @@ export default function FinancialPage() {
             )}
           </tbody>
         </table>
+
+        {meta && (
+          <SimplePaginator
+            currentPage={meta.current_page}
+            lastPage={meta.last_page}
+            total={meta.total}
+            perPage={meta.per_page}
+            onPage={(p) => setPage(p)}
+          />
+        )}
       </div>
 
       <Modal title="Novo Lançamento" open={modalOpen} onClose={() => setModalOpen(false)}>

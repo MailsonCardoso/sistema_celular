@@ -149,6 +149,11 @@ class FinancialTransactionController extends Controller
             ")
             ->value('balance');
 
+        $pendingReceivables = (float) FinancialTransaction::query()
+            ->where('type', TransactionType::Income)
+            ->where('status', TransactionStatus::Pending)
+            ->sum('amount');
+
         return response()->json([
             'date_from' => $dateFrom->toDateString(),
             'date_to' => $dateTo->toDateString(),
@@ -157,6 +162,7 @@ class FinancialTransactionController extends Controller
             'balance' => $income - $expense,
             'previous_balance' => $previousBalance,
             'accrued_balance' => $previousBalance + $income - $expense,
+            'pending_receivables' => $pendingReceivables,
             'by_category' => [
                 'income' => (object) $query(TransactionType::Income)
                     ->selectRaw('category, SUM(amount) as total')

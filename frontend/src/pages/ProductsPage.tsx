@@ -5,6 +5,7 @@ import { Field, Input, Select, Textarea, useFormErrors } from '../components/for
 import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
 import LimitGate from '../components/LimitGate'
+import SimplePaginator from '../components/SimplePaginator'
 import StatCard from '../components/StatCard'
 import type { Product } from '../types'
 
@@ -71,9 +72,13 @@ const icons = {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [summary, setSummary] = useState<{ stock_value: number; total_items: number } | null>(null)
+  const [meta, setMeta] = useState<{ current_page: number; last_page: number; total: number; per_page: number } | null>(
+    null,
+  )
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [onlyLowStock, setOnlyLowStock] = useState(false)
+  const [page, setPage] = useState(1)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Product | null>(null)
   const [form, setForm] = useState<ProductForm>(emptyForm)
@@ -84,17 +89,21 @@ export default function ProductsPage() {
   const { serverErrors, setServerErrors, handleSubmit } = useFormErrors()
 
   const load = useCallback(async () => {
-    const params: Record<string, string> = { per_page: '100' }
+    const params: Record<string, string | number | undefined> = { per_page: 10, page }
     if (search) params.search = search
     if (category) params.category = category
     if (onlyLowStock) params.low_stock = '1'
-    const { data } = await api.get<{ data: Product[] }>('/products', { params })
+    const { data } = await api.get<{
+      data: Product[]
+      meta: { current_page: number; last_page: number; total: number; per_page: number }
+    }>('/products', { params })
     setProducts(data.data)
+    setMeta(data.meta)
     api
       .get<{ stock_value: number; total_items: number }>('/products/summary')
       .then(({ data }) => setSummary(data))
       .catch(() => {})
-  }, [search, category, onlyLowStock])
+  }, [search, category, onlyLowStock, page])
 
   useEffect(() => {
     const t = setTimeout(() => void load(), 300)
@@ -368,9 +377,19 @@ export default function ProductsPage() {
                 </td>
               </tr>
             )}
-          </tbody>
-        </table>
-      </div>
+            </tbody>
+          </table>
+
+          {meta && (
+            <SimplePaginator
+              currentPage={meta.current_page}
+              lastPage={meta.last_page}
+              total={meta.total}
+              perPage={meta.per_page}
+              onPage={(p) => setPage(p)}
+            />
+          )}
+        </div>
 
       <Modal title={editing ? 'Editar Produto' : 'Nova Peça'} open={modalOpen} onClose={() => setModalOpen(false)}>
         <form onSubmit={save} className="space-y-4">

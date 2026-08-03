@@ -5,6 +5,7 @@ import StatusBadge from '../components/StatusBadge'
 import NewOrderModal from '../components/NewOrderModal'
 import OrderDetail from '../components/OrderDetail'
 import LimitGate from '../components/LimitGate'
+import SimplePaginator from '../components/SimplePaginator'
 import { useAuth } from '../context/AuthContext'
 import type { ServiceOrder, ServiceOrderStatusValue } from '../types'
 
@@ -80,22 +81,37 @@ function daysOpen(entryDate: string): number {
 export default function ServiceOrdersPage() {
   const { user } = useAuth()
   const [orders, setOrders] = useState<ServiceOrder[]>([])
+  const [meta, setMeta] = useState<{ current_page: number; last_page: number; total: number; per_page: number } | null>(
+    null,
+  )
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<ServiceOrderStatusValue | 'all'>('all')
+  const [page, setPage] = useState(1)
   const [createOpen, setCreateOpen] = useState(false)
   const [detailId, setDetailId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
-    const { data } = await api.get<{ data: ServiceOrder[] }>('/service-orders', {
+    const { data } = await api.get<{
+      data: ServiceOrder[]
+      meta: { current_page: number; last_page: number; total: number; per_page: number }
+    }>('/service-orders', {
       params: {
         search: search.trim() || undefined,
         status: status === 'all' ? undefined : status,
-        per_page: 100,
+        per_page: 10,
+        page,
       },
     })
     setOrders(data.data)
+    setMeta(data.meta)
     setLoading(false)
+  }, [search, status, page])
+
+  // reinicia para a primeira página ao trocar filtro (search/status)
+  useEffect(() => {
+    if (search !== '' || status !== 'all') setPage(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, status])
 
   useEffect(() => {
@@ -160,7 +176,7 @@ export default function ServiceOrdersPage() {
 
       <div className="mb-4 flex flex-wrap gap-3">
         <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-          {orders.length} OSs na listagem
+          {orders.length} OSs na página{meta && ` de ${meta.total} no total`}
         </span>
         <span className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
           {openCount} em andamento
@@ -265,6 +281,16 @@ export default function ServiceOrdersPage() {
               )}
             </tbody>
           </table>
+
+          {meta && (
+            <SimplePaginator
+              currentPage={meta.current_page}
+              lastPage={meta.last_page}
+              total={meta.total}
+              perPage={meta.per_page}
+              onPage={(p) => setPage(p)}
+            />
+          )}
         </div>
       )}
 
