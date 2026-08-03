@@ -93,6 +93,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
         status,
       })
       notify(data.data)
+      onClose()
     } catch (err) {
       setError(errorMessage(err))
     } finally {
