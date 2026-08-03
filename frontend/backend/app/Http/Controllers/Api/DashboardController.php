@@ -84,10 +84,21 @@ class DashboardController extends Controller
                 ->whereDate('paid_date', '>=', $monthStart)
                 ->sum('amount');
 
+            $previousBalance = (float) (clone $incomeQuery)
+                ->where('status', TransactionStatus::Paid)
+                ->whereDate('paid_date', '<', $monthStart)
+                ->sum('amount')
+                - (float) (clone $expenseQuery)
+                    ->where('status', TransactionStatus::Paid)
+                    ->whereDate('paid_date', '<', $monthStart)
+                    ->sum('amount');
+
             $data += [
                 'monthly_income' => $monthlyIncome,
                 'monthly_expense' => $monthlyExpense,
                 'monthly_balance' => $monthlyIncome - $monthlyExpense,
+                'previous_balance' => $previousBalance,
+                'accrued_balance' => $previousBalance + $monthlyIncome - $monthlyExpense,
                 'pending_receivables' => (float) (clone $incomeQuery)
                     ->where('status', TransactionStatus::Pending)
                     ->sum('amount'),

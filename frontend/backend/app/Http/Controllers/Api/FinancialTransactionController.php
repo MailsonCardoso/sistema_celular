@@ -82,12 +82,23 @@ class FinancialTransactionController extends Controller
         $income = (float) $totals?->income;
         $expense = (float) $totals?->expense;
 
+        $previousBalance = (float) FinancialTransaction::query()
+            ->where('status', TransactionStatus::Paid)
+            ->whereDate('due_date', '<', $dateFrom)
+            ->selectRaw("
+                COALESCE(SUM(CASE WHEN type = 'income' THEN amount END), 0) -
+                COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0) as balance
+            ")
+            ->value('balance');
+
         return response()->json([
             'date_from' => $dateFrom->toDateString(),
             'date_to' => $dateTo->toDateString(),
             'income' => $income,
             'expense' => $expense,
             'balance' => $income - $expense,
+            'previous_balance' => $previousBalance,
+            'accrued_balance' => $previousBalance + $income - $expense,
             'by_category' => [
                 'income' => (object) $query(TransactionType::Income)
                     ->selectRaw('category, SUM(amount) as total')

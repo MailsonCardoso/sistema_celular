@@ -53,6 +53,16 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l9 5 9-5-9-5-9 5zm0 6l9 5 9-5M3 18l9 5 9-5" />
     </svg>
   ),
+  previous: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  accrued: (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+    </svg>
+  ),
   stock: (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
@@ -91,6 +101,8 @@ export default function DashboardPage() {
           { label: 'Saldo do mês', value: currency(data.monthly_balance ?? 0), icon: icons.balance, gradient: 'slate' },
           { label: 'A receber', value: currency(data.pending_receivables ?? 0), icon: icons.pending, gradient: 'amber' },
           { label: 'Despesas do mês', value: currency(data.monthly_expense ?? 0), icon: icons.expense, gradient: 'rose' },
+          { label: 'Saldo anterior', value: currency(data.previous_balance ?? 0), icon: icons.previous, gradient: 'violet' },
+          { label: 'Saldo acumulado', value: currency(data.accrued_balance ?? 0), icon: icons.accrued, gradient: 'blue' },
         ]),
     { label: 'OS em aberto', value: data.open_orders, icon: icons.clipboard, gradient: 'blue' },
     { label: 'Concluídas no mês', value: data.completed_this_month, icon: icons.check, gradient: 'emerald' },

@@ -172,6 +172,8 @@ export interface DashboardData {
   monthly_income?: number
   monthly_expense?: number
   monthly_balance?: number
+  previous_balance?: number
+  accrued_balance?: number
   pending_receivables?: number
   low_stock_count?: number
   active_clients: number

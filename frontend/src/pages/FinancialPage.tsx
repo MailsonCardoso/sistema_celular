@@ -37,7 +37,13 @@ export default function FinancialPage() {
   const [status, setStatus] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
-  const [summary, setSummary] = useState<{ income: number; expense: number; balance: number } | null>(null)
+  const [summary, setSummary] = useState<{
+    income: number
+    expense: number
+    balance: number
+    previous_balance: number
+    accrued_balance: number
+  } | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [form, setForm] = useState<TxForm>(emptyForm)
   const [saving, setSaving] = useState(false)
@@ -58,7 +64,13 @@ export default function FinancialPage() {
     const reportParams: Record<string, string> = {}
     if (dateFrom) reportParams.date_from = dateFrom
     if (dateTo) reportParams.date_to = dateTo
-    const report = await api.get<{ income: number; expense: number; balance: number }>('/financial/report', {
+    const report = await api.get<{
+      income: number
+      expense: number
+      balance: number
+      previous_balance: number
+      accrued_balance: number
+    }>('/financial/report', {
       params: reportParams,
     })
     setSummary(report.data)
@@ -205,6 +217,17 @@ export default function FinancialPage() {
       {summary && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
+            label="Saldo anterior"
+            value={currency(summary.previous_balance)}
+            hint="Pagas antes do período"
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+            gradient="violet"
+          />
+          <StatCard
             label="Entradas"
             value={currency(summary.income)}
             icon={
@@ -254,6 +277,17 @@ export default function FinancialPage() {
               </svg>
             }
             gradient="amber"
+          />
+          <StatCard
+            label="Saldo acumulado"
+            value={currency(summary.accrued_balance)}
+            hint="Saldo anterior + período"
+            icon={
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            }
+            gradient="blue"
           />
         </div>
       )}
