@@ -19,6 +19,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
 
     Route::get('/store/limits', [StoreController::class, 'limits'])->name('api.store.limits');
+    Route::patch('/store', [StoreController::class, 'update'])
+        ->name('api.store.update')
+        ->middleware('role:admin');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('api.dashboard.index');
 

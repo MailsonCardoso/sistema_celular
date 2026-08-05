@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, ClipboardList, Users, Package, UserCog, CircleDollarSign, Building2, Smartphone, LogOut } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Users, Package, UserCog, CircleDollarSign, Building2, Settings, Smartphone, LogOut } from 'lucide-react'
 import type { Role } from '../types'
 
 interface NavItem {
@@ -46,6 +46,12 @@ const navItems: NavItem[] = [
     label: 'Financeiro',
     roles: ['admin'],
     icon: <CircleDollarSign className="h-5 w-5" />,
+  },
+  {
+    to: '/configuracoes',
+    label: 'Configurações',
+    roles: ['admin'],
+    icon: <Settings className="h-5 w-5" />,
   },
   {
     to: '/admin/lojas',

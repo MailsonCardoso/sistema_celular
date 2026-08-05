@@ -11,6 +11,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshLimits: () => Promise<void>
+  refreshStore: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -29,6 +30,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLimits(null)
     }
   }, [])
+
+  const refreshStore = useCallback(async () => {
+    try {
+      const { data } = await api.get<{ user: User; store: Store | null }>('/me')
+      setUser(data.user)
+      setStore(data.store)
+      if (data.store) await refreshLimits()
+    } catch {
+      /* mantém estado atual */
+    }
+  }, [refreshLimits])
 
   const fetchUser = useCallback(async () => {
     try {
@@ -72,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, store, limits, isLoading, isAuthenticated: !!user, login, logout, refreshLimits }}
+      value={{ user, store, limits, isLoading, isAuthenticated: !!user, login, logout, refreshLimits, refreshStore }}
     >
       {children}
     </AuthContext.Provider>

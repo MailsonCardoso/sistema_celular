@@ -13,6 +13,7 @@ import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
 import ProductsPage from './pages/ProductsPage'
 import FinancialPage from './pages/FinancialPage'
+import SettingsPage from './pages/SettingsPage'
 import StoresPage from './pages/StoresPage'
 import UsersPage from './pages/UsersPage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -73,6 +74,14 @@ createRoot(document.getElementById('root')!).render(
               element={
                 <PrivateRoute roles={['admin', 'super_admin']}>
                   <FinancialPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="configuracoes"
+              element={
+                <PrivateRoute roles={['admin']}>
+                  <SettingsPage />
                 </PrivateRoute>
               }
             />
