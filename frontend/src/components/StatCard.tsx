@@ -23,17 +23,18 @@ export default function StatCard({ label, value, hint, icon, gradient }: StatCar
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
       <div className="flex items-start justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-          <p className="mt-2 text-2xl font-bold text-slate-800">{value}</p>
-          {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
+          <p className="mt-2 truncate text-2xl font-bold text-slate-800">{value}</p>
+          {hint && <p className="mt-1 truncate text-xs text-slate-400">{hint}</p>}
         </div>
         <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${g} text-white shadow-md`}
+          className={`hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${g} text-white shadow-md sm:flex`}
         >
           {icon}
         </div>
       </div>
+      <div className={`absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r ${g} opacity-80 sm:hidden`} />
       <div className={`absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r ${g} opacity-0 transition-opacity duration-200 group-hover:opacity-100`} />
     </div>
   )
