@@ -44,7 +44,20 @@ class ServiceOrderService
         $data['entry_date'] ??= today()->toDateString();
 
         $order = DB::transaction(function () use ($data, $actor) {
+            $year = (int) substr($data['entry_date'], 0, 4);
+
+            $lastNumber = ServiceOrder::query()
+                ->where('store_id', $actor->store_id)
+                ->where('os_number_year', $year)
+                ->lockForUpdate()
+                ->orderByDesc('os_number')
+                ->value('os_number');
+
+            $data['os_number'] = ($lastNumber ?? 0) + 1;
+            $data['os_number_year'] = $year;
+
             $order = ServiceOrder::create($data);
+
             $this->assertDiscountValid($order);
             $order->recalculateTotal();
 

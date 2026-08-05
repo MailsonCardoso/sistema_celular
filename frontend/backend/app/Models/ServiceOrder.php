@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ServiceOrderStatus;
 use App\Models\Concerns\BelongsToStore;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,8 @@ class ServiceOrder extends Model
 
     protected $fillable = [
         'store_id',
+        'os_number',
+        'os_number_year',
         'client_id',
         'technician_id',
         'device_brand',
@@ -66,6 +69,16 @@ class ServiceOrder extends Model
     public function history(): HasMany
     {
         return $this->hasMany(ServiceHistory::class)->latest();
+    }
+
+    /**
+     * Número estruturado da OS: sequencial por loja e por ano (ex.: 0001/2026).
+     */
+    protected function osNumberFormatted(): Attribute
+    {
+        return Attribute::get(fn () => $this->os_number !== null && $this->os_number_year !== null
+            ? sprintf('%04d/%d', $this->os_number, $this->os_number_year)
+            : null);
     }
 
     /**

@@ -546,62 +546,70 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
 
       {order && (
         <div id="print-os" className="hidden bg-white text-slate-900 print:block">
-          <div className="mb-4 border-b-2 border-slate-900 pb-3 text-center">
-            <h1 className="text-2xl font-bold uppercase">{store?.store_name ?? 'OmniOS'}</h1>
-            {[store?.cnpj_cpf, store?.phone, store?.address].filter(Boolean).length > 0 && (
-              <p className="mt-1 text-xs">
-                {[store?.cnpj_cpf, store?.phone, store?.address].filter(Boolean).join(' · ')}
-              </p>
-            )}
+          <div className="border-b-2 border-slate-900 pb-4 text-center">
+            <h1 className="text-3xl font-bold uppercase tracking-wide">{store?.store_name ?? 'OmniOS'}</h1>
+            {store?.cnpj_cpf && <p className="mt-1 font-semibold">CNPJ/CPF: {store.cnpj_cpf}</p>}
+            {store?.address && <p className="text-xs">{store.address}</p>}
+            <p className="text-xs">
+              {store?.phone ? `Tel: ${store.phone}` : ''}
+              {store?.email ? `${store.phone ? ' · ' : ''}E-mail: ${store.email}` : ''}
+            </p>
           </div>
 
-          <h2 className="mb-4 text-center text-lg font-bold">ORDEM DE SERVIÇO #{order.id}</h2>
-
-          <div className="mb-4 flex justify-between gap-6 text-sm">
-            <div className="space-y-1">
-              <p>
-                <strong>Cliente:</strong> {(order.client as Client | null)?.name ?? `#${order.client_id}`}
-                {(order.client as Client | null)?.phone ? ` (${(order.client as Client | null)?.phone})` : ''}
-              </p>
-              <p>
-                <strong>Aparelho:</strong> {order.device_brand} {order.device_model}
-                {order.device_imei ? ` · IMEI: ${order.device_imei}` : ''}
-              </p>
-              <p>
-                <strong>Defeito relatado:</strong> {order.reported_issue}
-              </p>
-              <p>
-                <strong>Diagnóstico técnico:</strong> {order.technical_diagnosis ?? '—'}
-              </p>
-            </div>
-            <div className="space-y-1 text-right">
-              <p>
-                <strong>Entrada:</strong> {dateBR(order.entry_date)}
-              </p>
-              {order.expected_delivery_at && (
-                <p>
-                  <strong>Previsão:</strong> {datetimeBR(order.expected_delivery_at.replace(' ', 'T'))}
-                </p>
-              )}
-              {order.delivery_date && (
-                <p>
-                  <strong>Entrega:</strong> {dateBR(order.delivery_date)}
-                </p>
-              )}
-              <p>
-                <strong>Técnico:</strong> {order.technician?.name ?? 'Não atribuído'}
-              </p>
-              <p>
-                <strong>Status:</strong> {order.status_label}
-              </p>
-            </div>
+          <div className="my-4 border border-slate-900 py-2 text-center">
+            <h2 className="text-xl font-bold uppercase">Ordem de Serviço</h2>
+            <p className="mt-0.5 text-sm font-semibold">
+              Nº {order.os_number_formatted ?? `#${order.id}`}
+            </p>
           </div>
+
+          <table className="mb-4 w-full border-collapse text-sm">
+            <tbody>
+              <tr>
+                <td className="label-cell">Cliente</td>
+                <td className="value-cell">{(order.client as Client | null)?.name ?? `#${order.client_id}`}</td>
+                <td className="label-cell">CPF/CNPJ</td>
+                <td className="value-cell">{(order.client as Client | null)?.cpf_cnpj ?? '—'}</td>
+              </tr>
+              <tr>
+                <td className="label-cell">Telefone</td>
+                <td className="value-cell">{(order.client as Client | null)?.phone ?? '—'}</td>
+                <td className="label-cell">Data de entrada</td>
+                <td className="value-cell">{dateBR(order.entry_date)}</td>
+              </tr>
+              <tr>
+                <td className="label-cell">Aparelho</td>
+                <td className="value-cell">
+                  {order.device_brand} {order.device_model}
+                  {order.device_imei ? ` · IMEI: ${order.device_imei}` : ''}
+                </td>
+                <td className="label-cell">Previsão</td>
+                <td className="value-cell">
+                  {order.expected_delivery_at ? datetimeBR(order.expected_delivery_at.replace(' ', 'T')) : '—'}
+                </td>
+              </tr>
+              <tr>
+                <td className="label-cell">Técnico</td>
+                <td className="value-cell">{order.technician?.name ?? 'Não atribuído'}</td>
+                <td className="label-cell">Status</td>
+                <td className="value-cell">{order.status_label}</td>
+              </tr>
+              <tr>
+                <td className="label-cell">Defeito relatado</td>
+                <td className="value-cell" colSpan={3}>{order.reported_issue}</td>
+              </tr>
+              <tr>
+                <td className="label-cell">Diagnóstico técnico</td>
+                <td className="value-cell" colSpan={3}>{order.technical_diagnosis ?? '—'}</td>
+              </tr>
+            </tbody>
+          </table>
 
           {order.checklist &&
             (order.checklist.items.length > 0 || order.checklist.condition.length > 0) && (
               <div className="mb-4 text-sm">
                 <p className="mb-1 font-semibold">Checklist de entrada</p>
-                <p className="text-slate-700">
+                <p>
                   {order.checklist.items.length > 0 && <>Itens deixados: {order.checklist.items.join(', ')}</>}
                   {order.checklist.items.length > 0 && order.checklist.condition.length > 0 && ' · '}
                   {order.checklist.condition.length > 0 && <>Estado: {order.checklist.condition.join(', ')}</>}
@@ -664,6 +672,25 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
               <span className="text-xs text-slate-600">Assinatura do técnico</span>
             </div>
           </div>
+
+          <style>{`
+            #print-os .label-cell {
+              width: 15%;
+              border: 1px solid #94a3b8;
+              background: #f1f5f9;
+              padding: 4px 8px;
+              font-size: 11px;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.02em;
+              white-space: nowrap;
+            }
+            #print-os .value-cell {
+              min-width: 35%;
+              border: 1px solid #94a3b8;
+              padding: 4px 8px;
+            }
+          `}</style>
         </div>
       )}
     </Modal>

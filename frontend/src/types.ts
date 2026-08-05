@@ -119,6 +119,8 @@ export interface ServiceOrderChecklist {
 
 export interface ServiceOrder {
   id: number
+  os_number: number | null
+  os_number_formatted: string | null
   client_id: number
   client: Client | null
   technician_id: number | null

@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            // No SQLite a coluna é varchar livre (sem constraint de ENUM),
+            // portanto o novo valor já é aceito sem alteração de schema.
+            return;
+        }
+
         $values = implode("','", TransactionCategory::values());
 
         DB::statement(

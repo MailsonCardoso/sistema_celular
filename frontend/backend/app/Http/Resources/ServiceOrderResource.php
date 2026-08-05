@@ -11,6 +11,8 @@ class ServiceOrderResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'os_number' => $this->os_number,
+            'os_number_formatted' => $this->osNumberFormatted,
             'client_id' => $this->client_id,
             'client' => new ClientResource($this->whenLoaded('client')),
             'technician_id' => $this->technician_id,
