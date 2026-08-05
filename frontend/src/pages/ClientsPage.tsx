@@ -163,25 +163,19 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
-              <th className="px-5 py-3">Cliente</th>
-              <th className="px-5 py-3">CPF/CNPJ</th>
-              <th className="px-5 py-3">Contato</th>
-              <th className="px-5 py-3 text-center">OSs</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
+      {clients.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/60 bg-white px-5 py-10 text-center text-sm text-slate-400 shadow-sm">
+          Nenhum cliente encontrado.
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3 md:hidden">
             {clients.map((client) => (
-              <tr key={client.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70">
-                <td className="px-5 py-3.5">
-                  <Link to={`/clientes/${client.id}`} className="group flex items-center gap-3">
+              <div key={client.id} className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <Link to={`/clientes/${client.id}`} className="group flex min-w-0 items-center gap-3">
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
                         client.status === 'active'
                           ? 'bg-gradient-to-br from-indigo-500 to-violet-600'
                           : 'bg-gradient-to-br from-slate-400 to-slate-500'
@@ -189,46 +183,33 @@ export default function ClientsPage() {
                     >
                       {client.name.slice(0, 1).toUpperCase()}
                     </div>
-                    <span className="font-medium text-slate-800 group-hover:text-indigo-600 group-hover:underline">
-                      {client.name}
-                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-800 group-hover:underline">{client.name}</p>
+                      <p className="text-xs text-slate-500">{client.cpf_cnpj ?? '—'}</p>
+                    </div>
                   </Link>
-                </td>
-                <td className="px-5 py-3.5 text-slate-600">{client.cpf_cnpj ?? '—'}</td>
-                <td className="px-5 py-3.5">
-                  <div className="space-y-1 text-xs text-slate-600">
-                    {client.phone && (
-                      <p className="flex items-center gap-1.5">
-                        <span className="text-slate-400">{icons.phone}</span>
-                        {client.phone}
-                      </p>
-                    )}
-                    {client.email && (
-                      <p className="flex items-center gap-1.5">
-                        <span className="text-slate-400">{icons.mail}</span>
-                        <span className="truncate">{client.email}</span>
-                      </p>
-                    )}
-                    {!client.phone && !client.email && <p className="text-slate-400">—</p>}
-                  </div>
-                </td>
-                <td className="px-5 py-3.5 text-center">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700">
-                    {icons.orders}
-                    {client.service_orders_count ?? 0}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5">
                   <span
-                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       client.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
                     }`}
                   >
                     {client.status === 'active' ? 'Ativo' : 'Inativo'}
                   </span>
-                </td>
-                <td className="px-5 py-3.5">
-                  <div className="flex justify-end gap-1.5">
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                  <div className="flex min-w-0 items-center gap-3">
+                    {client.phone && (
+                      <span className="flex items-center gap-1 truncate">
+                        <span className="shrink-0">{icons.phone}</span>
+                        <span className="truncate">{client.phone}</span>
+                      </span>
+                    )}
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 font-bold text-indigo-700">
+                      {icons.orders}
+                      {client.service_orders_count ?? 0}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
                     <button
                       onClick={() => openEdit(client)}
                       title="Editar"
@@ -255,19 +236,111 @@ export default function ClientsPage() {
                       {icons.trash}
                     </button>
                   </div>
-                </td>
-              </tr>
+                </div>
+              </div>
             ))}
-            {clients.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-slate-400">
-                  Nenhum cliente encontrado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm md:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
+                  <th className="px-5 py-3">Cliente</th>
+                  <th className="px-5 py-3">CPF/CNPJ</th>
+                  <th className="px-5 py-3">Contato</th>
+                  <th className="px-5 py-3 text-center">OSs</th>
+                  <th className="px-5 py-3">Status</th>
+                  <th className="px-5 py-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clients.map((client) => (
+                  <tr key={client.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/70">
+                    <td className="px-5 py-3.5">
+                      <Link to={`/clientes/${client.id}`} className="group flex items-center gap-3">
+                        <div
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                            client.status === 'active'
+                              ? 'bg-gradient-to-br from-indigo-500 to-violet-600'
+                              : 'bg-gradient-to-br from-slate-400 to-slate-500'
+                          }`}
+                        >
+                          {client.name.slice(0, 1).toUpperCase()}
+                        </div>
+                        <span className="font-medium text-slate-800 group-hover:text-indigo-600 group-hover:underline">
+                          {client.name}
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-600">{client.cpf_cnpj ?? '—'}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="space-y-1 text-xs text-slate-600">
+                        {client.phone && (
+                          <p className="flex items-center gap-1.5">
+                            <span className="text-slate-400">{icons.phone}</span>
+                            {client.phone}
+                          </p>
+                        )}
+                        {client.email && (
+                          <p className="flex items-center gap-1.5">
+                            <span className="text-slate-400">{icons.mail}</span>
+                            <span className="truncate">{client.email}</span>
+                          </p>
+                        )}
+                        {!client.phone && !client.email && <p className="text-slate-400">—</p>}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-center">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700">
+                        {icons.orders}
+                        {client.service_orders_count ?? 0}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          client.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                        }`}
+                      >
+                        {client.status === 'active' ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          onClick={() => openEdit(client)}
+                          title="Editar"
+                          className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                        >
+                          {icons.edit}
+                        </button>
+                        <button
+                          onClick={() => void toggleStatus(client)}
+                          title={client.status === 'active' ? 'Inativar' : 'Ativar'}
+                          className={`rounded-lg border p-2 transition ${
+                            client.status === 'active'
+                              ? 'border-slate-200 text-slate-500 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600'
+                              : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                          }`}
+                        >
+                          {icons.power}
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(client)}
+                          title="Excluir"
+                          className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+                        >
+                          {icons.trash}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <Modal title={editing ? 'Editar Cliente' : 'Novo Cliente'} open={modalOpen} onClose={() => setModalOpen(false)} icon={<Users className="h-4 w-4" />}>
         <form onSubmit={save} className="space-y-4">
@@ -279,7 +352,7 @@ export default function ClientsPage() {
               placeholder="Nome do cliente"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="CPF/CNPJ">
               <Input
                 value={form.cpf_cnpj}

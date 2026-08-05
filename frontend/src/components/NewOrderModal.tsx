@@ -210,7 +210,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
             title="Dados do Dispositivo"
             icon={<Smartphone className="h-3.5 w-3.5" />}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Marca do aparelho" required>
               <Input
                 required
@@ -301,7 +301,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
             title="Financeiro e Prazos"
             icon={<CircleDollarSign className="h-3.5 w-3.5" />}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Valor da mão de obra (R$)">
               <Input
                 type="number"

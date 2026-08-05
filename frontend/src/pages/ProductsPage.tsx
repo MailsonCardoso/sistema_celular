@@ -233,8 +233,125 @@ export default function ProductsPage() {
         </label>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
+      {products.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/60 bg-white px-5 py-10 text-center text-sm text-slate-400 shadow-sm">
+          Nenhum produto encontrado.
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3 md:hidden">
+            {products.map((product) => {
+              const margin =
+                product.cost_price > 0
+                  ? Math.round(((product.selling_price - product.cost_price) / product.cost_price) * 100)
+                  : null
+              const stockMax = Math.max(product.min_stock_quantity * 2, product.stock_quantity, 1)
+              return (
+                <div key={product.id} className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-800">{product.name}</p>
+                      {product.brand && <p className="text-xs text-slate-400">{product.brand}</p>}
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        product.category === 'peca' ? 'bg-indigo-50 text-indigo-700' : 'bg-violet-50 text-violet-700'
+                      }`}
+                    >
+                      {product.category_label}
+                    </span>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="rounded-lg bg-slate-50 px-2 py-1.5 text-center">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-400">Custo</p>
+                      <p className="text-sm text-slate-600">{currency(product.cost_price)}</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-50 px-2 py-1.5 text-center">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-400">Venda</p>
+                      <p className="text-sm font-semibold text-slate-800">{currency(product.selling_price)}</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-50 px-2 py-1.5 text-center">
+                      <p className="text-[11px] uppercase tracking-wide text-slate-400">Margem</p>
+                      {margin !== null ? (
+                        <p
+                          className={`text-sm font-semibold ${
+                            margin >= 50 ? 'text-emerald-700' : margin >= 20 ? 'text-blue-700' : 'text-amber-700'
+                          }`}
+                        >
+                          {margin}%
+                        </p>
+                      ) : (
+                        <p className="text-sm text-slate-400">—</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span>Estoque</span>
+                      <span
+                        className={`inline-flex rounded-full px-2 py-0.5 font-bold ${
+                          product.is_low_stock ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'
+                        }`}
+                      >
+                        {product.stock_quantity}
+                      </span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className={`h-1.5 rounded-full ${product.is_low_stock ? 'bg-orange-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${Math.min(100, (product.stock_quantity / stockMax) * 100)}%` }}
+                      />
+                    </div>
+                    {product.is_low_stock && (
+                      <p className="mt-1 text-xs font-semibold text-orange-600">min {product.min_stock_quantity}</p>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        product.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {product.status === 'active' ? 'Ativo' : 'Inativo'}
+                    </span>
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => openEdit(product)}
+                        title="Editar"
+                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                      >
+                        {icons.edit}
+                      </button>
+                      <button
+                        onClick={() => void toggleStatus(product)}
+                        title={product.status === 'active' ? 'Inativar' : 'Ativar'}
+                        className={`rounded-lg border p-2 transition ${
+                          product.status === 'active'
+                            ? 'border-slate-200 text-slate-500 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-600'
+                            : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                        }`}
+                      >
+                        {icons.power}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(product)}
+                        title="Excluir"
+                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600"
+                      >
+                        {icons.trash}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm md:block">
+            <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
               <th className="px-5 py-3">Produto</th>
@@ -343,15 +460,9 @@ export default function ProductsPage() {
                 </tr>
               )
             })}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
-                  Nenhum produto encontrado.
-                </td>
-              </tr>
-            )}
             </tbody>
           </table>
+          </div>
 
           {meta && (
             <SimplePaginator
@@ -362,7 +473,8 @@ export default function ProductsPage() {
               onPage={(p) => setPage(p)}
             />
           )}
-        </div>
+        </>
+      )}
 
       <Modal title={editing ? 'Editar Produto' : 'Nova Peça'} open={modalOpen} onClose={() => setModalOpen(false)} icon={<Package className="h-4 w-4" />}>
         <form onSubmit={save} className="space-y-4">
@@ -381,7 +493,7 @@ export default function ProductsPage() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Categoria" required>
               <Select
                 value={form.category}
@@ -395,7 +507,7 @@ export default function ProductsPage() {
               <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Preço de custo (R$)">
               <Input
                 type="number"
@@ -416,7 +528,7 @@ export default function ProductsPage() {
               />
             </Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Quantidade em estoque">
               <Input
                 type="number"

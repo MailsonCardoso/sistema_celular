@@ -68,12 +68,12 @@ export default function StoresPage() {
           <h1 className="text-2xl font-bold text-slate-900">Lojas</h1>
           <p className="text-sm text-slate-500">Gerencie os planos e o acesso das lojas cadastradas.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar loja..."
-            className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:w-56"
           />
           <select
             value={statusFilter}
@@ -116,7 +116,87 @@ export default function StoresPage() {
       ) : stores.length === 0 ? (
         <p className="py-10 text-center text-sm text-slate-500">Nenhuma loja encontrada.</p>
       ) : (
-        <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+        <>
+          <div className="space-y-3 md:hidden">
+            {stores.map((store) => (
+              <div key={store.id} className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-900">{store.store_name}</p>
+                    <p className="truncate text-xs text-slate-500">Responsável: {store.owner_name}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                      store.subscription_status
+                        ? statusStyles[store.subscription_status]
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {store.subscription_label}
+                  </span>
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-lg bg-slate-50 px-2 py-1.5">
+                    <p className="text-lg font-bold text-slate-800">{store.counts?.users ?? 0}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-400">Usuários</p>
+                  </div>
+                  <div className="rounded-lg bg-slate-50 px-2 py-1.5">
+                    <p className="text-lg font-bold text-slate-800">{store.counts?.clients ?? 0}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-400">Clientes</p>
+                  </div>
+                  <div className="rounded-lg bg-slate-50 px-2 py-1.5">
+                    <p className="text-lg font-bold text-slate-800">{store.counts?.service_orders ?? 0}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-400">OSs</p>
+                  </div>
+                </div>
+
+                <div className="mt-3 space-y-0.5 text-xs text-slate-500">
+                  <p className="truncate">{store.email}</p>
+                  <p>{store.cnpj_cpf ?? 'Sem CNPJ/CPF'}</p>
+                  {store.trial_limit_at && (
+                    <p>Trial até {new Date(store.trial_limit_at).toLocaleDateString('pt-BR')}</p>
+                  )}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {store.subscription_status !== 'full_access' && (
+                    <button
+                      onClick={() => changeStatus(store, 'full_access')}
+                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
+                    >
+                      Liberar
+                    </button>
+                  )}
+                  {store.subscription_status === 'full_access' && (
+                    <button
+                      onClick={() => changeStatus(store, 'trial_active')}
+                      className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-700"
+                    >
+                      Reativar Trial
+                    </button>
+                  )}
+                  {store.subscription_status !== 'expired' && (
+                    <button
+                      onClick={() => changeStatus(store, 'expired')}
+                      className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-700"
+                    >
+                      Suspender
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setConfirmStore(store)}
+                    title="Excluir loja e todos os dados"
+                    className="rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:border-rose-300 hover:bg-rose-50"
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 md:block">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-slate-50">
               <tr>
@@ -204,7 +284,8 @@ export default function StoresPage() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </div>
   )

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { Pencil } from 'lucide-react'
+import { Pencil, UsersRound } from 'lucide-react'
 import { api, errorMessage } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
+import Modal from '../components/Modal'
 import type { Role, User } from '../types'
 
 const roleOptions: { value: Role; label: string }[] = [
@@ -128,9 +129,74 @@ export default function UsersPage() {
 
       {loading ? (
         <p className="py-10 text-center text-sm text-slate-500">Carregando equipe...</p>
+      ) : users.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200/60 bg-white px-5 py-10 text-center text-sm text-slate-400 shadow-sm">
+          Nenhum usuário encontrado.
+        </div>
       ) : (
-        <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
+        <>
+          <div className="space-y-3 md:hidden">
+            {users.map((user) => (
+              <div key={user.id} className="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                        user.is_active
+                          ? 'bg-gradient-to-br from-indigo-500 to-violet-600'
+                          : 'bg-gradient-to-br from-slate-400 to-slate-500'
+                      }`}
+                    >
+                      {user.name.slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-slate-900">{user.name}</p>
+                      <p className="truncate text-xs text-slate-500">{user.email}</p>
+                    </div>
+                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      user.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                    }`}
+                  >
+                    {user.is_active ? 'Ativo' : 'Desativado'}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="inline-flex rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                      {user.role_label}
+                    </span>
+                    {user.phone && <span className="truncate text-xs text-slate-500">{user.phone}</span>}
+                  </div>
+                  <div className="flex shrink-0 gap-1.5">
+                    {user.id !== me?.id && (
+                      <button
+                        onClick={() => openEdit(user)}
+                        title="Editar"
+                        className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                      >
+                        {icons.edit}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => void toggleActive(user)}
+                      className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                        user.is_active
+                          ? 'bg-rose-600 text-white hover:bg-rose-700'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      }`}
+                    >
+                      {user.is_active ? 'Desativar' : 'Reativar'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 md:block">
+            <table className="min-w-full divide-y divide-slate-200 text-sm">
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -199,28 +265,23 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
-      {modalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"
-          onClick={() => setModalOpen(false)}
-        >
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="mb-4 text-lg font-semibold text-slate-900">
-              {editing ? 'Editar usuário' : 'Novo usuário'}
-            </h2>
-            {error && (
-              <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {error}
-              </div>
-            )}
-            <div className="space-y-4">
+      <Modal
+        title={editing ? 'Editar usuário' : 'Novo usuário'}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        icon={<UsersRound className="h-4 w-4" />}
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </div>
+          )}
+          <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">Nome</label>
                 <input
@@ -240,7 +301,7 @@ export default function UsersPage() {
                   className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">Telefone</label>
                   <input
@@ -295,9 +356,8 @@ export default function UsersPage() {
                 </button>
               </div>
             </div>
-          </form>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   )
 }

@@ -150,105 +150,147 @@ export default function ServiceOrdersPage() {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
-                <th className="px-5 py-3">OS #</th>
-                <th className="px-5 py-3">Aparelho</th>
-                <th className="px-5 py-3">Cliente</th>
-                <th className="px-5 py-3">Técnico</th>
-                <th className="px-5 py-3">Entrada</th>
-                <th className="px-5 py-3 text-right">Valor</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => {
-                const days = daysOpen(order.entry_date)
-                return (
-                  <tr
-                    key={order.id}
-                    onClick={() => setDetailId(order.id)}
-                    className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-indigo-50/40"
-                  >
-                    <td className="px-5 py-3.5 font-bold text-indigo-600">#{order.id}</td>
-                    <td className="px-5 py-3.5">
-                      <p className="flex items-center gap-1.5 font-medium text-slate-800">
-                        <span className="text-slate-400">{icons.device}</span>
-                        {order.device_brand} {order.device_model}
-                      </p>
-                      {order.device_imei && <p className="mt-0.5 text-xs text-slate-400">IMEI: {order.device_imei}</p>}
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-600">
-                      <p className="flex items-center gap-1.5">
-                        <span className="text-slate-400">{icons.user}</span>
-                        {order.client?.name ?? `Cliente #${order.client_id}`}
-                      </p>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-600">
-                      {order.technician ? (
-                        <p className="flex items-center gap-1.5">
-                          <span className="text-slate-400">{icons.wrench}</span>
-                          {order.technician.name}
-                        </p>
-                      ) : (
-                        <span className="text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <p className="flex items-center gap-1.5 whitespace-nowrap text-slate-600">
-                        <span className="text-slate-400">{icons.clock}</span>
-                        {dateBR(order.entry_date)}
-                      </p>
-                      {days > 1 && (
-                        <span className="mt-0.5 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                          {days} dias
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-right font-bold text-slate-700">{currency(order.total_amount)}</td>
-                    <td className="px-5 py-3.5">
-                      <StatusBadge status={order.status} label={order.status_label} />
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex justify-end">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setDetailId(order.id)
-                          }}
-                          title="Ver detalhes"
-                          className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
-                        >
-                          {icons.eye}
-                        </button>
+        <>
+          {orders.length === 0 ? (
+            <div className="rounded-2xl border border-slate-200/60 bg-white px-5 py-10 text-center text-sm text-slate-400 shadow-sm">
+              Nenhuma ordem de serviço encontrada.
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3 md:hidden">
+                {orders.map((order) => {
+                  const days = daysOpen(order.entry_date)
+                  return (
+                    <button
+                      key={order.id}
+                      onClick={() => setDetailId(order.id)}
+                      className="block w-full rounded-2xl border border-slate-200/60 bg-white p-4 text-left shadow-sm transition active:bg-indigo-50/40"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-slate-800">
+                            <span className="text-indigo-600">#{order.id}</span>{' '}
+                            {order.device_brand} {order.device_model}
+                          </p>
+                          <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-slate-500">
+                            <span className="shrink-0">{icons.user}</span>
+                            <span className="truncate">{order.client?.name ?? `Cliente #${order.client_id}`}</span>
+                          </p>
+                        </div>
+                        <StatusBadge status={order.status} label={order.status_label} />
                       </div>
-                    </td>
-                  </tr>
-                )
-              })}
-              {orders.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
-                    Nenhuma ordem de serviço encontrada.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                      <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
+                        <span className="flex items-center gap-1.5">
+                          {icons.clock}
+                          Entrada: {dateBR(order.entry_date)}
+                          {days > 1 && (
+                            <span className="ml-1 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                              {days} dias
+                            </span>
+                          )}
+                        </span>
+                        <span className="font-bold text-slate-700">{currency(order.total_amount)}</span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
 
-          {meta && (
-            <SimplePaginator
-              currentPage={meta.current_page}
-              lastPage={meta.last_page}
-              total={meta.total}
-              perPage={meta.per_page}
-              onPage={(p) => setPage(p)}
-            />
+              <div className="hidden overflow-x-auto rounded-2xl border border-slate-200/60 bg-white shadow-sm md:block">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50/70 text-xs uppercase text-slate-400">
+                      <th className="px-5 py-3">OS #</th>
+                      <th className="px-5 py-3">Aparelho</th>
+                      <th className="px-5 py-3">Cliente</th>
+                      <th className="px-5 py-3">Técnico</th>
+                      <th className="px-5 py-3">Entrada</th>
+                      <th className="px-5 py-3 text-right">Valor</th>
+                      <th className="px-5 py-3">Status</th>
+                      <th className="px-5 py-3 text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((order) => {
+                      const days = daysOpen(order.entry_date)
+                      return (
+                        <tr
+                          key={order.id}
+                          onClick={() => setDetailId(order.id)}
+                          className="cursor-pointer border-b border-slate-100 last:border-0 hover:bg-indigo-50/40"
+                        >
+                          <td className="px-5 py-3.5 font-bold text-indigo-600">#{order.id}</td>
+                          <td className="px-5 py-3.5">
+                            <p className="flex items-center gap-1.5 font-medium text-slate-800">
+                              <span className="text-slate-400">{icons.device}</span>
+                              {order.device_brand} {order.device_model}
+                            </p>
+                            {order.device_imei && <p className="mt-0.5 text-xs text-slate-400">IMEI: {order.device_imei}</p>}
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600">
+                            <p className="flex items-center gap-1.5">
+                              <span className="text-slate-400">{icons.user}</span>
+                              {order.client?.name ?? `Cliente #${order.client_id}`}
+                            </p>
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-600">
+                            {order.technician ? (
+                              <p className="flex items-center gap-1.5">
+                                <span className="text-slate-400">{icons.wrench}</span>
+                                {order.technician.name}
+                              </p>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <p className="flex items-center gap-1.5 whitespace-nowrap text-slate-600">
+                              <span className="text-slate-400">{icons.clock}</span>
+                              {dateBR(order.entry_date)}
+                            </p>
+                            {days > 1 && (
+                              <span className="mt-0.5 inline-flex rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                                {days} dias
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-5 py-3.5 text-right font-bold text-slate-700">{currency(order.total_amount)}</td>
+                          <td className="px-5 py-3.5">
+                            <StatusBadge status={order.status} label={order.status_label} />
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex justify-end">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setDetailId(order.id)
+                                }}
+                                title="Ver detalhes"
+                                className="rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+                              >
+                                {icons.eye}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {meta && (
+                <SimplePaginator
+                  currentPage={meta.current_page}
+                  lastPage={meta.last_page}
+                  total={meta.total}
+                  perPage={meta.per_page}
+                  onPage={(p) => setPage(p)}
+                />
+              )}
+            </>
           )}
-        </div>
+        </>
       )}
 
       {canCreate && (

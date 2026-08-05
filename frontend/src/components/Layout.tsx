@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, ClipboardList, Users, Package, UserCog, CircleDollarSign, Building2, Settings, Smartphone, LogOut } from 'lucide-react'
+import { LayoutDashboard, ClipboardList, Users, Package, UserCog, CircleDollarSign, Building2, Settings, Smartphone, LogOut, Menu, X } from 'lucide-react'
 import type { Role } from '../types'
 
 interface NavItem {
@@ -64,6 +65,7 @@ const navItems: NavItem[] = [
 export default function Layout() {
   const { user, store, limits, logout } = useAuth()
   const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const isSuperAdmin = user?.role === 'super_admin'
   const items = navItems.filter(
@@ -71,23 +73,65 @@ export default function Layout() {
   )
 
   const handleLogout = async () => {
+    setSidebarOpen(false)
     await logout()
     navigate('/login')
   }
 
+  const closeSidebar = () => setSidebarOpen(false)
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-100">
-      <aside className="flex w-64 shrink-0 flex-col bg-slate-950">
+      {/* Top bar mobile */}
+      <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between border-b border-slate-800/70 bg-slate-950 px-4 py-3 md:hidden">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+            <Smartphone className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">{isSuperAdmin ? 'OmniOS' : (store?.store_name ?? 'OmniOS')}</p>
+            <p className="text-[11px] text-slate-400">{isSuperAdmin ? 'Administração' : 'Assistência Técnica'}</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="rounded-lg border border-slate-700/70 p-2 text-slate-300 transition hover:bg-slate-800"
+          aria-label="Abrir menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </header>
+
+      {/* Backdrop mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-[2px] md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col bg-slate-950 transition-transform duration-200 md:static md:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <div className="flex items-center gap-3 border-b border-slate-800/70 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-6 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-900/40">
             <Smartphone className="h-5 w-5" />
           </div>
-          <div>
-            <p className="text-sm font-semibold text-white">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-white">
               {isSuperAdmin ? 'OmniOS' : (store?.store_name ?? 'OmniOS')}
             </p>
             <p className="text-xs text-slate-400">{isSuperAdmin ? 'Administração' : 'Assistência Técnica'}</p>
           </div>
+          <button
+            onClick={closeSidebar}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-900 hover:text-white md:hidden"
+            aria-label="Fechar menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {!isSuperAdmin && store?.is_trial && (
@@ -109,12 +153,13 @@ export default function Layout() {
           </div>
         )}
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {items.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === '/'}
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                   isActive
@@ -151,8 +196,8 @@ export default function Layout() {
         )}
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl px-8 py-8">
+      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
+        <div className="mx-auto max-w-7xl px-4 py-4 md:px-8 md:py-8">
           <Outlet />
         </div>
       </main>
