@@ -32,7 +32,7 @@ export default function Modal({ title, open, onClose, children, wide, icon }: Mo
           </h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            className="rounded-lg border border-slate-200 bg-slate-100 p-1.5 text-slate-600 shadow-sm transition hover:bg-slate-200 hover:text-slate-900"
             aria-label="Fechar"
           >
             <X className="h-5 w-5" />

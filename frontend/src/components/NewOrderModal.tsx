@@ -352,7 +352,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
+            className="rounded-lg border border-slate-400 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
           >
             Cancelar
           </button>

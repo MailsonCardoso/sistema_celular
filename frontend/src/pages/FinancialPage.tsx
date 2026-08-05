@@ -743,7 +743,7 @@ export default function FinancialPage() {
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              className="rounded-lg border border-slate-400 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
             >
               Cancelar
             </button>
@@ -864,7 +864,7 @@ export default function FinancialPage() {
             <button
               type="button"
               onClick={() => setSaleOpen(false)}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              className="rounded-lg border border-slate-400 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
             >
               Cancelar
             </button>
