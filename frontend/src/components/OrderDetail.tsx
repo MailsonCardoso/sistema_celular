@@ -239,7 +239,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+          <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm">
             <SectionTitle
               title="Cliente e responsável"
               icon={<User className="h-3.5 w-3.5" />}
@@ -267,7 +267,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+          <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm">
             <SectionTitle
               title="Problema e diagnóstico"
               icon={<Wrench className="h-3.5 w-3.5" />}
@@ -305,7 +305,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
 
           {order.checklist &&
             (order.checklist.items.length > 0 || order.checklist.condition.length > 0) && (
-              <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4 text-sm">
+              <div className="rounded-xl border border-slate-200/60 bg-white p-4 text-sm shadow-sm">
                 <SectionTitle
                   title="Checklist de entrada"
                   icon={<ClipboardList className="h-3.5 w-3.5" />}
@@ -353,7 +353,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
           )}
 
-          <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+          <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm">
             <SectionTitle
               title="Peças utilizadas"
               icon={<Cog className="h-3.5 w-3.5" />}
@@ -468,7 +468,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           </div>
 
           {canChangeStatus && (
-            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+            <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm">
               <SectionTitle
                 title="Mudar status"
                 icon={<RefreshCw className="h-3.5 w-3.5" />}
@@ -497,7 +497,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           )}
 
           {limits?.can_see_history && (
-            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+            <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm">
               <SectionTitle
                 title="Histórico de acompanhamento"
                 icon={<History className="h-3.5 w-3.5" />}
@@ -519,7 +519,7 @@ export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
           )}
 
           {editable && (
-            <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+            <div className="rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm">
               <SectionTitle
                 title="Comentários"
                 icon={<MessageSquare className="h-3.5 w-3.5" />}

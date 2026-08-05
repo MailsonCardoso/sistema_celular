@@ -478,73 +478,79 @@ export default function ProductsPage() {
 
       <Modal title={editing ? 'Editar Produto' : 'Nova Peça'} open={modalOpen} onClose={() => setModalOpen(false)} icon={<Package className="h-4 w-4" />}>
         <form onSubmit={save} className="space-y-4">
-          <Field label="Nome" required>
-            <Input
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Ex: Bateria iPhone 12"
-            />
-          </Field>
-          <Field label="Descrição">
-            <Textarea
-              rows={2}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Categoria" required>
-              <Select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value as 'peca' | 'acessorio' })}
-              >
-                <option value="peca">Peça</option>
-                <option value="acessorio">Acessório</option>
-              </Select>
-            </Field>
-            <Field label="Marca">
-              <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
-            </Field>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Preço de custo (R$)">
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.cost_price}
-                onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
-              />
-            </Field>
-            <Field label="Preço de venda (R$)" required>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <Field label="Nome" required>
               <Input
                 required
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.selling_price}
-                onChange={(e) => setForm({ ...form, selling_price: e.target.value })}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Ex: Bateria iPhone 12"
               />
             </Field>
+            <Field label="Descrição">
+              <Textarea
+                rows={2}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+              />
+            </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Categoria" required>
+                <Select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value as 'peca' | 'acessorio' })}
+                >
+                  <option value="peca">Peça</option>
+                  <option value="acessorio">Acessório</option>
+                </Select>
+              </Field>
+              <Field label="Marca">
+                <Input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} />
+              </Field>
+            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Quantidade em estoque">
-              <Input
-                type="number"
-                min="0"
-                value={form.stock_quantity}
-                onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })}
-              />
-            </Field>
-            <Field label="Estoque mínimo (alerta)">
-              <Input
-                type="number"
-                min="0"
-                value={form.min_stock_quantity}
-                onChange={(e) => setForm({ ...form, min_stock_quantity: e.target.value })}
-              />
-            </Field>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Preço de custo (R$)">
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.cost_price}
+                  onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
+                />
+              </Field>
+              <Field label="Preço de venda (R$)" required>
+                <Input
+                  required
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.selling_price}
+                  onChange={(e) => setForm({ ...form, selling_price: e.target.value })}
+                />
+              </Field>
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Quantidade em estoque">
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.stock_quantity}
+                  onChange={(e) => setForm({ ...form, stock_quantity: e.target.value })}
+                />
+              </Field>
+              <Field label="Estoque mínimo (alerta)">
+                <Input
+                  type="number"
+                  min="0"
+                  value={form.min_stock_quantity}
+                  onChange={(e) => setForm({ ...form, min_stock_quantity: e.target.value })}
+                />
+              </Field>
+            </div>
           </div>
 
           {(error || serverErrors.name) && (

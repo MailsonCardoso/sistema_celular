@@ -344,45 +344,49 @@ export default function ClientsPage() {
 
       <Modal title={editing ? 'Editar Cliente' : 'Novo Cliente'} open={modalOpen} onClose={() => setModalOpen(false)} icon={<Users className="h-4 w-4" />}>
         <form onSubmit={save} className="space-y-4">
-          <Field label="Nome completo" required>
-            <Input
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Nome do cliente"
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="CPF/CNPJ">
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <Field label="Nome completo" required>
               <Input
-                value={form.cpf_cnpj}
-                onChange={(e) => setForm({ ...form, cpf_cnpj: e.target.value })}
-                placeholder="000.000.000-00"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Nome do cliente"
               />
             </Field>
-            <Field label="Telefone">
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <Field label="CPF/CNPJ">
+                <Input
+                  value={form.cpf_cnpj}
+                  onChange={(e) => setForm({ ...form, cpf_cnpj: e.target.value })}
+                  placeholder="000.000.000-00"
+                />
+              </Field>
+              <Field label="Telefone">
+                <Input
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="(11) 99999-9999"
+                />
+              </Field>
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <Field label="E-mail">
               <Input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                placeholder="(11) 99999-9999"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="cliente@email.com"
+              />
+            </Field>
+            <Field label="Endereço">
+              <Input
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                placeholder="Rua, número, bairro, cidade"
               />
             </Field>
           </div>
-          <Field label="E-mail">
-            <Input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="cliente@email.com"
-            />
-          </Field>
-          <Field label="Endereço">
-            <Input
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              placeholder="Rua, número, bairro, cidade"
-            />
-          </Field>
 
           {(error || serverErrors.name || serverErrors.cpf_cnpj) && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">

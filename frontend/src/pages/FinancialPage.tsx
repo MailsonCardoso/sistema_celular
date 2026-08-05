@@ -630,102 +630,108 @@ export default function FinancialPage() {
 
       <Modal title="Novo Lançamento" open={modalOpen} onClose={() => setModalOpen(false)} icon={<CircleDollarSign className="h-4 w-4" />}>
         <form onSubmit={save} className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Tipo" required>
-              <Select
-                value={form.type}
-                onChange={(e) => {
-                  const type = e.target.value as TxForm['type']
-                  setForm({
-                    ...form,
-                    type,
-                    category: type === 'expense' ? 'expense' : 'service_payment',
-                  })
-                }}
-              >
-                <option value="income">Entrada</option>
-                <option value="expense">Saída</option>
-              </Select>
-            </Field>
-            <Field label="Categoria" required>
-              <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as TxForm['category'] })}>
-                {form.type === 'income' ? (
-                  <>
-                    <option value="service_payment">Pagamento de Serviço</option>
-                    <option value="parts_payment">Pagamento de Peças</option>
-                    <option value="other">Outro</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="expense">Despesa</option>
-                    <option value="other">Outro</option>
-                  </>
-                )}
-              </Select>
-            </Field>
-          </div>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Tipo" required>
+                <Select
+                  value={form.type}
+                  onChange={(e) => {
+                    const type = e.target.value as TxForm['type']
+                    setForm({
+                      ...form,
+                      type,
+                      category: type === 'expense' ? 'expense' : 'service_payment',
+                    })
+                  }}
+                >
+                  <option value="income">Entrada</option>
+                  <option value="expense">Saída</option>
+                </Select>
+              </Field>
+              <Field label="Categoria" required>
+                <Select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as TxForm['category'] })}>
+                  {form.type === 'income' ? (
+                    <>
+                      <option value="service_payment">Pagamento de Serviço</option>
+                      <option value="parts_payment">Pagamento de Peças</option>
+                      <option value="other">Outro</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="expense">Despesa</option>
+                      <option value="other">Outro</option>
+                    </>
+                  )}
+                </Select>
+              </Field>
+            </div>
 
-          <Field label="Descrição" required>
-            <Input
-              required
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Ex: Serviço iPhone 12 - João"
-            />
-          </Field>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Valor (R$)" required>
+            <Field label="Descrição">
               <Input
                 required
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                placeholder="0,00"
-              />
-            </Field>
-            <Field label="Forma de pagamento">
-              <Select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
-                <option value="">Selecione...</option>
-                <option value="cash">Dinheiro</option>
-                <option value="credit_card">Cartão de Crédito</option>
-                <option value="debit_card">Cartão de Débito</option>
-                <option value="pix">Pix</option>
-                <option value="bank_transfer">Transferência</option>
-              </Select>
-            </Field>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Status" required>
-              <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as TxForm['status'] })}>
-                <option value="pending">Pendente</option>
-                <option value="paid">Pago</option>
-                <option value="cancelled">Cancelado</option>
-              </Select>
-            </Field>
-            <Field label="Vencimento" required>
-              <Input
-                required
-                type="date"
-                value={form.due_date}
-                onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Ex: Serviço iPhone 12 - João"
               />
             </Field>
           </div>
 
-          <Field label="Cliente (opcional)">
-            <Select value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}>
-              <option value="">Sem cliente vinculado</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Valor (R$)" required>
+                <Input
+                  required
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={form.amount}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                  placeholder="0,00"
+                />
+              </Field>
+              <Field label="Forma de pagamento">
+                <Select value={form.payment_method} onChange={(e) => setForm({ ...form, payment_method: e.target.value })}>
+                  <option value="">Selecione...</option>
+                  <option value="cash">Dinheiro</option>
+                  <option value="credit_card">Cartão de Crédito</option>
+                  <option value="debit_card">Cartão de Débito</option>
+                  <option value="pix">Pix</option>
+                  <option value="bank_transfer">Transferência</option>
+                </Select>
+              </Field>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Status" required>
+                <Select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as TxForm['status'] })}>
+                  <option value="pending">Pendente</option>
+                  <option value="paid">Pago</option>
+                  <option value="cancelled">Cancelado</option>
+                </Select>
+              </Field>
+              <Field label="Vencimento" required>
+                <Input
+                  required
+                  type="date"
+                  value={form.due_date}
+                  onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+                />
+              </Field>
+            </div>
+
+            <Field label="Cliente (opcional)">
+              <Select value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}>
+                <option value="">Sem cliente vinculado</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
 
           {(error || serverErrors.description) && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -754,70 +760,79 @@ export default function FinancialPage() {
 
       <Modal title="Vender acessório" open={saleOpen} onClose={() => setSaleOpen(false)} wide icon={<ShoppingBag className="h-4 w-4" />}>
         <form onSubmit={saveSale} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="Produto (acessório)" required>
-            <Select
-              required
-              value={selProduct}
-              onChange={(e) => setSelProduct(e.target.value)}
-            >
-              <option value="">Selecione um acessório...</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} — {p.brand ?? ''} ({p.stock_quantity} disp.)
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Quantidade" required>
-            <Input
-              required
-              type="number"
-              min={1}
-              max={selProductObj?.stock_quantity ?? 1}
-              value={selQuantity}
-              onChange={(e) => setSelQuantity(e.target.value)}
-              placeholder="1"
-            />
-          </Field>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm sm:col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Produto (acessório)" required>
+                <Select
+                  required
+                  value={selProduct}
+                  onChange={(e) => setSelProduct(e.target.value)}
+                >
+                  <option value="">Selecione um acessório...</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} — {p.brand ?? ''} ({p.stock_quantity} disp.)
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Quantidade" required>
+                <Input
+                  required
+                  type="number"
+                  min={1}
+                  max={selProductObj?.stock_quantity ?? 1}
+                  value={selQuantity}
+                  onChange={(e) => setSelQuantity(e.target.value)}
+                  placeholder="1"
+                />
+              </Field>
+            </div>
+          </div>
 
-          <Field label="Valor unitário">
-            <Input
-              type="text"
-              value={currency(selAmount / Number(selQuantity || 1))}
-              readOnly
-              placeholder="automático"
-              className="bg-slate-50"
-            />
-            <p className="mt-1 text-xs text-slate-400">
-              Produto: {selProductObj ? currency(selProductObj.selling_price) : '-'}
-            </p>
-          </Field>
-          <Field label="Total (R$)">
-            <Input type="text" value={currency(selAmount)} readOnly placeholder="automático" className="font-semibold" />
-          </Field>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm sm:col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Valor unitário">
+                <Input
+                  type="text"
+                  value={currency(selAmount / Number(selQuantity || 1))}
+                  readOnly
+                  placeholder="automático"
+                  className="bg-slate-50"
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  Produto: {selProductObj ? currency(selProductObj.selling_price) : '-'}
+                </p>
+              </Field>
+              <Field label="Total (R$)">
+                <Input type="text" value={currency(selAmount)} readOnly placeholder="automático" className="font-semibold" />
+              </Field>
+            </div>
+          </div>
 
-          <Field label="Cliente (opcional)">
-            <Select value={selClient} onChange={(e) => setSelClient(e.target.value)}>
-              <option value="">Sem cliente vinculado</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label="Forma de pagamento">
-            <Select value={selPaymentMethod} onChange={(e) => setSelPaymentMethod(e.target.value)}>
-              <option value="">Selecione...</option>
-              <option value="cash">Dinheiro</option>
-              <option value="credit_card">Cartão de Crédito</option>
-              <option value="debit_card">Cartão de Débito</option>
-              <option value="pix">Pix</option>
-              <option value="bank_transfer">Transferência</option>
-            </Select>
-          </Field>
-
-          <div className="sm:col-span-2">
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm sm:col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Cliente (opcional)">
+                <Select value={selClient} onChange={(e) => setSelClient(e.target.value)}>
+                  <option value="">Sem cliente vinculado</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Forma de pagamento">
+                <Select value={selPaymentMethod} onChange={(e) => setSelPaymentMethod(e.target.value)}>
+                  <option value="">Selecione...</option>
+                  <option value="cash">Dinheiro</option>
+                  <option value="credit_card">Cartão de Crédito</option>
+                  <option value="debit_card">Cartão de Débito</option>
+                  <option value="pix">Pix</option>
+                  <option value="bank_transfer">Transferência</option>
+                </Select>
+              </Field>
+            </div>
             <Field label="Observação">
               <Input
                 value={selDescription}
@@ -827,15 +842,19 @@ export default function FinancialPage() {
             </Field>
           </div>
 
-          <Field label="Status" required>
-            <Select value={selStatus} onChange={(e) => setSelStatus(e.target.value)}>
-              <option value="paid">Pago</option>
-              <option value="pending">Pendente (a receber)</option>
-            </Select>
-          </Field>
-          <Field label="Vencimento" required>
-            <Input required type="date" value={selDueDate} onChange={(e) => setSelDueDate(e.target.value)} />
-          </Field>
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm sm:col-span-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Status" required>
+                <Select value={selStatus} onChange={(e) => setSelStatus(e.target.value)}>
+                  <option value="paid">Pago</option>
+                  <option value="pending">Pendente (a receber)</option>
+                </Select>
+              </Field>
+              <Field label="Vencimento" required>
+                <Input required type="date" value={selDueDate} onChange={(e) => setSelDueDate(e.target.value)} />
+              </Field>
+            </div>
+          </div>
 
           {error && (
             <div className="sm:col-span-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>

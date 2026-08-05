@@ -281,7 +281,8 @@ export default function UsersPage() {
               {error}
             </div>
           )}
-          <div className="space-y-4">
+          <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
+            <div className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">Nome</label>
                 <input
@@ -339,23 +340,24 @@ export default function UsersPage() {
                   className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
-                >
-                  {saving ? 'Salvando...' : editing ? 'Salvar' : 'Criar usuário'}
-                </button>
               </div>
             </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-60"
+            >
+              {saving ? 'Salvando...' : editing ? 'Salvar' : 'Criar usuário'}
+            </button>
+          </div>
         </form>
       </Modal>
     </div>
