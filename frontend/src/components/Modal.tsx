@@ -17,7 +17,7 @@ export default function Modal({ title, open, onClose, children, wide, icon }: Mo
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" onClick={onClose} />
       <div
-        className={`relative max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl border border-slate-200/60 bg-white shadow-2xl shadow-violet-900/10 sm:rounded-2xl ${
+        className={`custom-scrollbar relative max-h-[92dvh] w-full overflow-y-auto rounded-t-2xl border border-slate-200/60 bg-slate-50 shadow-2xl shadow-violet-900/10 sm:rounded-2xl ${
           wide ? 'sm:max-w-4xl' : 'sm:max-w-lg'
         }`}
       >

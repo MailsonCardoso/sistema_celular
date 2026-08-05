@@ -166,7 +166,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
   return (
     <Modal title="Nova Ordem de Serviço" open={open} onClose={onClose} wide icon={<ClipboardList className="h-4 w-4" />}>
       <form onSubmit={save} className="space-y-4">
-        <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+        <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
           <SectionTitle
             number={1}
             title="Cliente e Responsável"
@@ -204,7 +204,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+        <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
           <SectionTitle
             number={2}
             title="Dados do Dispositivo"
@@ -244,7 +244,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+        <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
           <SectionTitle
             number={3}
             title="Problema e Checklist"
@@ -295,7 +295,7 @@ export default function NewOrderModal({ open, onClose, onCreated }: Props) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200/70 bg-slate-50/50 p-4">
+        <div className="rounded-xl border border-slate-200/60 bg-white p-5 shadow-sm">
           <SectionTitle
             number={4}
             title="Financeiro e Prazos"
