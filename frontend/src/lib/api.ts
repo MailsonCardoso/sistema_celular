@@ -15,6 +15,24 @@ export const csrfClient = axios.create({
   withCredentials: true,
 })
 
+function readXSRFToken(): string | null {
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)
+  if (!match) return null
+  try {
+    return decodeURIComponent(match[1])
+  } catch {
+    return match[1]
+  }
+}
+
+api.interceptors.request.use((config) => {
+  const token = readXSRFToken()
+  if (token) {
+    config.headers.set('X-XSRF-TOKEN', token)
+  }
+  return config
+})
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
