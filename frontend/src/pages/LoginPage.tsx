@@ -69,7 +69,7 @@ export default function LoginPage() {
         </div>
 
         <p className="relative text-xs text-slate-400">
-          Experimente grátis por 30 dias — sem cartão de crédito.
+          Experimente grátis por 5 dias — sem cartão de crédito.
         </p>
       </div>
 
@@ -139,7 +139,7 @@ export default function LoginPage() {
           <div className="mt-4 rounded-2xl border border-dashed border-emerald-500/40 bg-emerald-500/10 p-5">
             <p className="text-sm font-semibold text-emerald-300">Ainda não tem uma loja?</p>
             <p className="mt-0.5 text-xs text-emerald-200/70">
-              Crie sua loja grátis e experimente o sistema completo por 30 dias, sem cartão de crédito.
+              Crie sua loja grátis e experimente o sistema completo por 5 dias, sem cartão de crédito.
             </p>
             <button
               type="button"

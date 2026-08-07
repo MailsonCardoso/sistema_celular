@@ -62,7 +62,7 @@ export default function RegisterPage() {
         <div className="relative">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-4 py-1.5 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/40">
             <Zap className="h-3.5 w-3.5" />
-            Trial grátis de 30 dias
+            Trial grátis de 5 dias
           </span>
           <h2 className="mt-5 text-3xl font-bold leading-tight text-white">
             Monte sua loja em <span className="text-emerald-400">menos de 2 minutos</span>
@@ -108,7 +108,7 @@ export default function RegisterPage() {
               <Building2 className="h-7 w-7" />
             </div>
             <h1 className="text-2xl font-bold text-white">Criar minha loja</h1>
-            <p className="mt-1 text-sm text-slate-400">Plano Trial de 30 dias — sem cartão de crédito</p>
+            <p className="mt-1 text-sm text-slate-400">Plano Trial de 5 dias — sem cartão de crédito</p>
           </div>
 
           <form onSubmit={handleSubmit} className="rounded-2xl bg-white p-8 shadow-xl">
@@ -146,10 +146,10 @@ export default function RegisterPage() {
                   </label>
                   <input
                     id="cnpj_cpf"
+                    required
                     value={cnpjCpf}
                     onChange={(e) => setCnpjCpf(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="Opcional"
                   />
                 </div>
                 <div>
@@ -158,10 +158,10 @@ export default function RegisterPage() {
                   </label>
                   <input
                     id="phone"
+                    required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                    placeholder="Opcional"
                   />
                 </div>
               </div>
