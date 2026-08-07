@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import ServiceOrdersPage from './pages/ServiceOrdersPage'
+import PrintOrderPage from './pages/PrintOrderPage'
 import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
 import ProductsPage from './pages/ProductsPage'
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
           >
             <Route index element={<DashboardPage />} />
             <Route path="ordens" element={<ServiceOrdersPage />} />
+            <Route path="ordens/:id/imprimir" element={<PrintOrderPage />} />
             <Route path="equipe" element={<PrivateRoute roles={['admin', 'super_admin']}><UsersPage /></PrivateRoute>} />
             <Route
               path="admin/lojas"

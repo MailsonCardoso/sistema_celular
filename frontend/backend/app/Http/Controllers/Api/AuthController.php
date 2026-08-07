@@ -30,7 +30,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'subscription_status' => SubscriptionStatus::TrialActive,
-            'trial_limit_at' => now()->addDays(30),
+            'trial_limit_at' => now()->addDays(5),
         ]);
 
         $user = User::create([
