@@ -42,7 +42,7 @@ function SectionTitle({ title, icon }: { title: string; icon: ReactNode }) {
 }
 
 export default function OrderDetail({ orderId, onClose, onChanged }: Props) {
-  const { user, limits, store } = useAuth()
+  const { user, limits } = useAuth()
   const [order, setOrder] = useState<ServiceOrder | null>(null)
   const [products, setProducts] = useState<Product[]>([])
   const [productId, setProductId] = useState('')
