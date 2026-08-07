@@ -42,8 +42,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [refreshLimits])
 
+  const hasSessionCookie = useCallback(() => {
+    return document.cookie.split(';').some((cookie) => cookie.trim().startsWith('laravel_session='))
+  }, [])
+
   const fetchUser = useCallback(async () => {
     try {
+      if (!hasSessionCookie()) {
+        setUser(null)
+        setStore(null)
+        return
+      }
       const { data } = await api.get<{ user: User; store: Store | null }>('/me')
       setUser(data.user)
       setStore(data.store)
@@ -54,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
-  }, [refreshLimits])
+  }, [refreshLimits, hasSessionCookie])
 
   useEffect(() => {
     void fetchUser()

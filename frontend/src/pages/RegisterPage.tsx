@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
-import { api, errorMessage } from '../lib/api'
+import { api, csrfClient, errorMessage } from '../lib/api'
 import { Building2, Zap, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
@@ -24,7 +23,7 @@ export default function RegisterPage() {
     setError('')
     setLoading(true)
     try {
-      await axios.get('/sanctum/csrf-cookie', { withCredentials: true })
+      await csrfClient.get('/sanctum/csrf-cookie')
       await api.post('/register', {
         store_name: storeName,
         owner_name: ownerName,
